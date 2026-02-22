@@ -15,6 +15,7 @@ import {
   ChevronUp, Timer
 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -47,7 +48,7 @@ const morningQs = [
 const afternoonQs = [
   "How was your morning?",
   "What have you done so far today?",
-  "Did you drink enough water?",
+  "What are your plans today?",
   "What is something kind you did for yourself?",
 ]
 const eveningQs = [
@@ -110,9 +111,9 @@ const personalStruggles = [
 
 function getTimeGreeting() {
   const h = new Date().getHours()
-  if (h < 12) return { greeting: "Good Morning", period: "morning" as const }
-  if (h < 17) return { greeting: "Good Afternoon", period: "afternoon" as const }
-  return { greeting: "Good Evening", period: "evening" as const }
+  // Greeting is always "Good Morning" per design
+  const period = h < 12 ? "morning" as const : h < 17 ? "afternoon" as const : "evening" as const
+  return { greeting: "Good Morning", period }
 }
 
 function getTodayQuestion() {
@@ -297,6 +298,7 @@ const recipes = [
 /*  HomePage Component                                                  */
 /* ================================================================== */
 export default function HomePage() {
+  const router = useRouter()
   const [isRecording, setIsRecording] = useState(false)
   const [journalUnlocked, setJournalUnlocked] = useState(false)
   const [showFuelModal, setShowFuelModal] = useState(false)
@@ -382,8 +384,28 @@ export default function HomePage() {
   const xp = 240
   const streak = 5
   const currency = xpCurrencies[activeAdventure] ?? xpCurrencies.jungle
-  const { greeting } = getTimeGreeting()
-  const question = getTodayQuestion()
+  const [greeting, setGreeting] = useState("Good Morning")
+  const [question, setQuestion] = useState("")
+
+  // Hydrate time-dependent values on client only to avoid SSR mismatch
+  useEffect(() => {
+    setGreeting(getTimeGreeting().greeting)
+    setQuestion(getTodayQuestion())
+  }, [])
+
+  /* -- Journal prompt picker -- */
+  const journalPrompts = [
+    "What are your plans today?",
+    "What is one thing you want to accomplish today?",
+    "What matters most to you right now?",
+    "How are you really feeling in this moment?",
+    "Describe one thing you are proud of recently.",
+    "What is one challenge you want to work through?",
+    "Who is someone you are grateful for and why?",
+    "What would make today a great day?",
+  ]
+  const [showJournalPicker, setShowJournalPicker] = useState(false)
+  const [selectedPrompt, setSelectedPrompt] = useState("")
 
   function addToMyDay(label: string) {
     const now = new Date()
@@ -403,10 +425,12 @@ export default function HomePage() {
       if (level >= 100) {
         level = 100
         if (fuelAnimRef.current) clearInterval(fuelAnimRef.current)
-        // Keep glow for another second then settle
+        // Keep glow for another second then navigate to adventure
         setTimeout(() => {
           setFuelAnimating(false)
           setCharacterGlowing(false)
+          // Auto-navigate to the active adventure
+          router.push(`/${activeAdventure}`)
         }, 1200)
       }
       setFuelLevel(level)
@@ -577,7 +601,12 @@ export default function HomePage() {
             {/* -- Voice Journal Card (60s max) -- */}
             <section className="rounded-3xl bg-[#13263A] p-6">
               <div className="mb-1 flex items-center justify-between">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">{"Today's Journal"}</h2>
+                <button
+                  onClick={() => !journalUnlocked && setShowJournalPicker(true)}
+                  className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF] transition-colors hover:text-[#8AA8C7]"
+                >
+                  {"Today's Journal"} {!journalUnlocked && <ChevronDown className="ml-1 inline h-3 w-3" />}
+                </button>
                 {journalUnlocked ? (
                   <span className="rounded-full bg-[#2E8B57]/20 px-3 py-1 text-xs font-bold text-[#A8E6B0]">Unlocked</span>
                 ) : (
@@ -586,7 +615,12 @@ export default function HomePage() {
                   </span>
                 )}
               </div>
-              <p className="mb-5 text-lg font-bold leading-relaxed text-white">{question}</p>
+              <button
+                onClick={() => !journalUnlocked && setShowJournalPicker(true)}
+                className="mb-5 w-full text-left text-lg font-bold leading-relaxed text-white transition-colors hover:text-[#A8E6B0]"
+              >
+                {selectedPrompt || question || "Tap to choose a journal prompt"}
+              </button>
               <div className="flex flex-col items-center gap-3">
                 <div className="relative">
                   <button
@@ -1309,6 +1343,42 @@ export default function HomePage() {
               </>
             )
           })()}
+        </DialogContent>
+      </Dialog>
+
+      {/* Journal Prompt Picker */}
+      <Dialog open={showJournalPicker} onOpenChange={setShowJournalPicker}>
+        <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#2A3E55] bg-[#13263A] p-6">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-white">Choose a Journal Prompt</DialogTitle>
+            <DialogDescription className="text-sm text-[#8AA8C7]">Pick a prompt to guide your journal entry, or start with a free entry.</DialogDescription>
+          </DialogHeader>
+          <div className="mt-3 flex flex-col gap-2">
+            <button
+              onClick={() => { setSelectedPrompt(""); setShowJournalPicker(false) }}
+              className="flex items-center gap-3 rounded-2xl bg-[#2E8B57]/15 p-4 text-left transition-all hover:scale-[1.01] active:scale-[0.99] ring-1 ring-[#2E8B57]/30"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2E8B57]/20">
+                <PenLine className="h-5 w-5 text-[#2E8B57]" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-[#A8E6B0]">Free Journal Entry</p>
+                <p className="text-xs text-[#8AA8C7]">Say whatever is on your mind</p>
+              </div>
+            </button>
+            {journalPrompts.map((prompt) => (
+              <button
+                key={prompt}
+                onClick={() => { setSelectedPrompt(prompt); setShowJournalPicker(false) }}
+                className={`flex items-center gap-3 rounded-2xl p-4 text-left transition-all hover:scale-[1.01] active:scale-[0.99] ${selectedPrompt === prompt ? "bg-[#2E8B57]/15 ring-1 ring-[#2E8B57]/30" : "bg-[#1A2D42]"}`}
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#5A8AAF]/15">
+                  <MessageCircle className="h-5 w-5 text-[#5A8AAF]" />
+                </div>
+                <p className="text-sm font-bold text-white">{prompt}</p>
+              </button>
+            ))}
+          </div>
         </DialogContent>
       </Dialog>
 

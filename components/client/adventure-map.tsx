@@ -40,20 +40,111 @@ export interface AdventureTheme {
   forkOptions?: { name: string; href: string; color: string }[]
 }
 
-/* -- Quest Steps (with repetition tracking: #1 #2 etc.) -- */
-const steps = [
-  { id: 1, num: 1, label: "Quest #1", icon: "cart", title: "Go Get Groceries", description: "Head to the store and pick up what you need.", type: "task" as const },
-  { id: 2, num: 2, label: "Quest #2", icon: "health", title: "Health Check-Up", description: "Visit your doctor or health appointment.", type: "task" as const },
-  { id: 3, num: 0, label: "Roadblock", icon: "wind", title: "Time to Breathe", description: "Blow away the boulder with deep breaths.", type: "roadblock" as const },
-  { id: 4, num: 3, label: "Quest #3", icon: "cook", title: "Meal Prep", description: "Cook food ahead of time so you eat well.", type: "task" as const },
-  { id: 5, num: 0, label: "Monster", icon: "ghost", title: "Scary Monster", description: "A scary thought appeared! Make it less intimidating.", type: "monster" as const },
-  { id: 6, num: 0, label: "Trigger", icon: "alert", title: "The Trigger: Tornado", description: "A storm is approaching! Use your grounding skills.", type: "trigger" as const },
-  { id: 7, num: 4, label: "Quest #4", icon: "bill", title: "Pay Your Bills", description: "Make sure your bills are paid on time.", type: "task" as const },
-  { id: 8, num: 0, label: "Thought Sort", icon: "brain", title: "Junk in the Rock", description: "Identify the negative thought. Trash it or treasure it?", type: "thought" as const },
-  { id: 9, num: 5, label: "Quest #5", icon: "budget", title: "Budget Review", description: "Look at your spending.", type: "task" as const },
-  { id: 10, num: 0, label: "Fork", icon: "fork", title: "Fork in the Road", description: "Choose your next landscape!", type: "fork" as const },
-  { id: 11, num: 0, label: "Treasure", icon: "star", title: "Treasure Chest", description: "Collect your reward and reflect.", type: "reward" as const },
+/* -- Real-life task pools for mix-and-match across adventures -- */
+const questPool = [
+  { icon: "cart", title: "Make Your Bed", description: "Start your day with one completed task. Make your bed neatly." },
+  { icon: "cart", title: "Put 5 Items Back in Place", description: "Find 5 things out of place and return them where they belong." },
+  { icon: "health", title: "Go for a 5-Minute Walk", description: "Step outside and walk for at least 5 minutes. Fresh air helps." },
+  { icon: "cart", title: "Take Out the Trash", description: "Gather any trash around your space and take it out." },
+  { icon: "cart", title: "Do a Load of Laundry", description: "Wash, dry, or fold one load of laundry today." },
+  { icon: "health", title: "Sit Outside for 3 Minutes", description: "Go outside, sit down, and just breathe for 3 minutes." },
+  { icon: "bill", title: "Pay One Bill", description: "Choose one bill and pay it or set up a payment reminder." },
+  { icon: "cart", title: "Reply to One Important Message", description: "Check your messages and reply to one you have been putting off." },
+  { icon: "health", title: "Schedule an Appointment", description: "Call or book one appointment you have been avoiding." },
+  { icon: "cart", title: "Organize a Drawer", description: "Pick one drawer and organize it. Remove what you don not need." },
+  { icon: "cook", title: "Complete 2 Small Tasks Today", description: "Pick 2 quick tasks from your to-do list and finish them." },
+  { icon: "budget", title: "Break a Big Task into 3 Steps", description: "Take one overwhelming task and write out 3 small steps for it." },
 ]
+
+const roadblockPool = [
+  { icon: "brain", title: "Label One Emotion Today", description: "Pause and name exactly what you are feeling right now.", type: "thought" as const },
+  { icon: "brain", title: "Replace One Negative Thought", description: "Catch a negative thought and rewrite it as something balanced.", type: "thought" as const },
+  { icon: "wind", title: "Drop One Worry in the Worry Box", description: "Write down a worry and let it go. You can revisit it with your therapist.", type: "roadblock" as const },
+  { icon: "brain", title: "Write One Balanced Thought", description: "Take a harsh self-judgment and write a more balanced version.", type: "thought" as const },
+]
+
+const triggerPool = [
+  { icon: "alert", title: "Pause for 30 Seconds", description: "Before responding, take 30 seconds to breathe and ground yourself." },
+  { icon: "alert", title: "Name Your Biggest Stressor", description: "Identify the single biggest source of stress right now and acknowledge it." },
+  { icon: "alert", title: "Reflect on One Win", description: "Think of one thing you did well recently. Hold onto that feeling." },
+  { icon: "alert", title: "Set Some Reminders", description: "Set 2-3 reminders for things you need to do this week." },
+]
+
+/* -- Build adventure steps from pools using a seed based on theme name -- */
+function buildAdventureSteps(themeName: string) {
+  // Simple hash seed from theme name
+  let seed = 0
+  for (let i = 0; i < themeName.length; i++) seed += themeName.charCodeAt(i) * (i + 1)
+
+  const pick = <T,>(arr: T[], count: number): T[] => {
+    const shuffled = [...arr]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      seed = (seed * 9301 + 49297) % 233280
+      const j = Math.floor((seed / 233280) * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled.slice(0, count)
+  }
+
+  const quests = pick(questPool, 8)
+  const roadblocks = pick(roadblockPool, 3 + (seed % 2)) // 3 or 4
+  const trigger = pick(triggerPool, 1)[0]
+
+  // Interleave: Q1, Q2, R1, Q3, Q4, R2, Q5, Trigger, Q6, R3, Q7, Q8, [R4?], Fork, Treasure
+  const steps: { id: number; num: number; label: string; icon: string; title: string; description: string; type: "task" | "roadblock" | "monster" | "trigger" | "thought" | "fork" | "reward" }[] = []
+  let id = 1
+  let qIdx = 0
+  let rIdx = 0
+  let qNum = 0
+
+  // Q1, Q2
+  for (let i = 0; i < 2 && qIdx < quests.length; i++) {
+    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, type: "task" }); qIdx++
+  }
+  // R1
+  if (rIdx < roadblocks.length) {
+    const rb = roadblocks[rIdx++]
+    steps.push({ id: id++, num: 0, label: "Roadblock", icon: rb.icon, title: rb.title, description: rb.description, type: rb.type })
+  }
+  // Q3, Q4
+  for (let i = 0; i < 2 && qIdx < quests.length; i++) {
+    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, type: "task" }); qIdx++
+  }
+  // R2
+  if (rIdx < roadblocks.length) {
+    const rb = roadblocks[rIdx++]
+    steps.push({ id: id++, num: 0, label: "Roadblock", icon: rb.icon, title: rb.title, description: rb.description, type: rb.type })
+  }
+  // Q5
+  if (qIdx < quests.length) {
+    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, type: "task" }); qIdx++
+  }
+  // Trigger event
+  steps.push({ id: id++, num: 0, label: "Trigger", icon: trigger.icon, title: trigger.title, description: trigger.description, type: "trigger" })
+  // Q6
+  if (qIdx < quests.length) {
+    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, type: "task" }); qIdx++
+  }
+  // R3
+  if (rIdx < roadblocks.length) {
+    const rb = roadblocks[rIdx++]
+    steps.push({ id: id++, num: 0, label: "Roadblock", icon: rb.icon, title: rb.title, description: rb.description, type: rb.type })
+  }
+  // Q7, Q8
+  for (let i = 0; i < 2 && qIdx < quests.length; i++) {
+    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, type: "task" }); qIdx++
+  }
+  // R4 if applicable
+  if (rIdx < roadblocks.length) {
+    const rb = roadblocks[rIdx++]
+    steps.push({ id: id++, num: 0, label: "Roadblock", icon: rb.icon, title: rb.title, description: rb.description, type: rb.type })
+  }
+  // Fork + Treasure
+  steps.push({ id: id++, num: 0, label: "Fork", icon: "fork", title: "Fork in the Road", description: "Choose your next landscape!", type: "fork" })
+  steps.push({ id: id++, num: 0, label: "Treasure", icon: "star", title: "Treasure Chest", description: "Collect your reward and reflect.", type: "reward" })
+
+  return steps
+}
 
 /* -- Upgrade tiers -- */
 const movementTiers = ["Walking", "Car", "Flying"]
@@ -95,9 +186,9 @@ function StepIcon({ type, color }: { type: string; color: string }) {
   }
 }
 
-function getNodeColor(step: typeof steps[0], cs: number, theme: AdventureTheme) {
-  if (step.id < cs) return theme.completedNodeColor
-  if (step.id === cs) return theme.currentNodeColor
+function getNodeColor(stepId: number, cs: number, theme: AdventureTheme) {
+  if (stepId < cs) return theme.completedNodeColor
+  if (stepId === cs) return theme.currentNodeColor
   return theme.lockedNodeColor
 }
 
@@ -113,11 +204,11 @@ function getSpecialRing(type: string) {
   }
 }
 
-const currentStep = 3
-
 /* ===== MAIN COMPONENT ===== */
 export function AdventureMap({ theme }: { theme: AdventureTheme }) {
-  const [selectedStep, setSelectedStep] = useState<typeof steps[0] | null>(null)
+  const steps = buildAdventureSteps(theme.name)
+  const currentStep = 3
+  const [selectedStep, setSelectedStep] = useState<(typeof steps)[number] | null>(null)
   const [activeTab, setActiveTab] = useState<"map" | "journal">("map")
   const [isRecording, setIsRecording] = useState(false)
   const [selectedVehicle, setSelectedVehicle] = useState(theme.vehicles[0]?.id ?? "")
@@ -138,7 +229,7 @@ export function AdventureMap({ theme }: { theme: AdventureTheme }) {
   const activeVehicle = theme.vehicles.find((v) => v.id === selectedVehicle) ?? theme.vehicles[0]
   const activeCharacter = theme.characters.find((c) => c.id === selectedCharacter) ?? theme.characters[0]
 
-  function handleStepClick(step: typeof steps[0]) {
+  function handleStepClick(step: (typeof steps)[number]) {
     if (step.id > currentStep) return
     if (step.type === "fork") { setShowForkPicker(true); return }
     if (step.type === "reward") { setShowRewardCelebration(true); return }
@@ -254,9 +345,9 @@ export function AdventureMap({ theme }: { theme: AdventureTheme }) {
               <div className="flex-1 overflow-y-auto px-4 pb-32 pt-4">
                 {theme.sceneryElements}
                 <div className="relative mx-auto flex w-full max-w-sm flex-col items-center">
-                  <svg className="absolute left-0 top-0 h-full w-full" viewBox="0 0 320 1700" preserveAspectRatio="none" fill="none" aria-hidden="true">
-                    <path d="M160 1680 C160 1590, 80 1530, 80 1440 C80 1350, 240 1290, 240 1200 C240 1110, 80 1050, 80 960 C80 870, 240 810, 240 720 C240 630, 80 570, 80 480 C80 390, 240 330, 240 240 C240 150, 160 90, 160 30 C160 15, 80 0, 80 0" stroke={theme.pathStroke} strokeWidth="60" strokeLinecap="round" opacity="0.3" />
-                    <path d="M160 1680 C160 1590, 80 1530, 80 1440 C80 1350, 240 1290, 240 1200 C240 1110, 80 1050, 80 960 C80 870, 240 810, 240 720 C240 630, 80 570, 80 480 C80 390, 240 330, 240 240 C240 150, 160 90, 160 30 C160 15, 80 0, 80 0" stroke={theme.pathDash} strokeWidth="8" strokeLinecap="round" strokeDasharray="12 8" opacity="0.5" />
+                  <svg className="absolute left-0 top-0 h-full w-full" viewBox="0 0 320 2600" preserveAspectRatio="none" fill="none" aria-hidden="true">
+                    <path d="M160 2580 C160 2490, 80 2430, 80 2340 C80 2250, 240 2190, 240 2100 C240 2010, 80 1950, 80 1860 C80 1770, 240 1710, 240 1620 C240 1530, 80 1470, 80 1380 C80 1290, 240 1230, 240 1140 C240 1050, 80 990, 80 900 C80 810, 240 750, 240 660 C240 570, 80 510, 80 420 C80 330, 240 270, 240 180 C240 90, 160 30, 160 10" stroke={theme.pathStroke} strokeWidth="60" strokeLinecap="round" opacity="0.3" />
+                    <path d="M160 2580 C160 2490, 80 2430, 80 2340 C80 2250, 240 2190, 240 2100 C240 2010, 80 1950, 80 1860 C80 1770, 240 1710, 240 1620 C240 1530, 80 1470, 80 1380 C80 1290, 240 1230, 240 1140 C240 1050, 80 990, 80 900 C80 810, 240 750, 240 660 C240 570, 80 510, 80 420 C80 330, 240 270, 240 180 C240 90, 160 30, 160 10" stroke={theme.pathDash} strokeWidth="8" strokeLinecap="round" strokeDasharray="12 8" opacity="0.5" />
                   </svg>
 
                   {/* Repetition tracker label */}
@@ -269,7 +360,7 @@ export function AdventureMap({ theme }: { theme: AdventureTheme }) {
                     const isCurrent = step.id === currentStep
                     const isLocked = step.id > currentStep
                     const xOffset = index % 2 === 0 ? -40 : 40
-                    const nodeColor = getNodeColor(step, currentStep, theme)
+                    const nodeColor = getNodeColor(step.id, currentStep, theme)
                     const isSpecial = step.type !== "task"
 
                     return (
