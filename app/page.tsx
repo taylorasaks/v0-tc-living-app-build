@@ -201,6 +201,26 @@ const boostCategories = [
     prompts: ["Rate your mood 1-10", "Do box breathing (4-4-4-4)", "Name the emotion you are feeling right now"] },
 ]
 
+/* -- Positive reflections pool -- */
+const positiveReflections = [
+  { title: "Amazing work!", message: "Every step you take is building a stronger, brighter you." },
+  { title: "You did it!", message: "That took real courage. Be proud of yourself right now." },
+  { title: "Way to show up!", message: "Showing up is the hardest part, and you nailed it." },
+  { title: "Keep going!", message: "You are proving to yourself that you can do hard things." },
+  { title: "Incredible!", message: "Small wins add up to big change. This matters." },
+  { title: "Proud of you!", message: "You are taking care of yourself, and that is powerful." },
+  { title: "You are growing!", message: "Every task you complete is a seed planted for your future." },
+  { title: "Brilliant!", message: "Your effort today is shaping a better tomorrow." },
+  { title: "Well done!", message: "You chose to move forward instead of standing still." },
+  { title: "Look at you go!", message: "Consistency is your superpower. Keep stacking these wins." },
+  { title: "That was brave!", message: "Facing your day head-on takes strength. You have it." },
+  { title: "Unstoppable!", message: "Nothing can slow you down when you show up like this." },
+]
+
+function getRandomReflection() {
+  return positiveReflections[Math.floor(Math.random() * positiveReflections.length)]
+}
+
 /* -- Workout routines -- */
 const outdoorActivities = [
   { label: "Collective Walk", desc: "Walk 20 min and earn chips", icon: Footprints, reward: "walking chips" },
@@ -248,7 +268,16 @@ export default function HomePage() {
   const [section, setSection] = useState<"home" | "adventures">("home")
   const [friendMsg, setFriendMsg] = useState("")
   const [activeAdventure] = useState("jungle")
+  const [showReflection, setShowReflection] = useState<{ title: string; message: string } | null>(null)
+  const reflectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const recordTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function triggerReflection() {
+    const r = getRandomReflection()
+    setShowReflection(r)
+    if (reflectionTimerRef.current) clearTimeout(reflectionTimerRef.current)
+    reflectionTimerRef.current = setTimeout(() => setShowReflection(null), 3500)
+  }
 
   const xp = 240
   const streak = 5
@@ -261,6 +290,7 @@ export default function HomePage() {
       recordTimerRef.current = setTimeout(() => {
         setIsRecording(false)
         setJournalUnlocked(true)
+        triggerReflection()
       }, 2000)
     } else if (recordTimerRef.current) {
       clearTimeout(recordTimerRef.current)
@@ -363,7 +393,7 @@ export default function HomePage() {
                   return (
                     <button
                       key={item.id}
-                      onClick={() => { if (!done) setCompletedXp((prev) => [...prev, item.id]) }}
+                      onClick={() => { if (!done) { setCompletedXp((prev) => [...prev, item.id]); triggerReflection() } }}
                       className={`flex items-center gap-3 rounded-2xl p-4 text-left transition-all ${done ? "bg-[#2E8B57]/15 ring-1 ring-[#2E8B57]/30" : "bg-[#1A2D42] hover:scale-[1.01] active:scale-[0.99]"}`}
                     >
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: done ? "#2E8B5722" : `${item.color}22` }}>
@@ -646,7 +676,7 @@ export default function HomePage() {
                   <span className="text-xs text-[#5A8AAF]">or upload from gallery</span>
                 </button>
                 <textarea placeholder="What did you eat? (optional)" className="min-h-20 w-full rounded-xl border-0 bg-[#1A2D42] p-4 text-sm text-white placeholder:text-[#5A8AAF] focus:outline-none focus:ring-2 focus:ring-[#2E8B57]" />
-                <Button onClick={() => { setFuelDone(true); setShowFuelModal(false); setFuelStep("choice") }} className="w-full rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]">
+                <Button onClick={() => { setFuelDone(true); setShowFuelModal(false); setFuelStep("choice"); triggerReflection() }} className="w-full rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]">
                   <Check className="mr-2 h-4 w-4" /> Log Meal (+15 {currency.name})
                 </Button>
               </div>
@@ -663,7 +693,7 @@ export default function HomePage() {
                 </DialogHeader>
                 <div className="mt-4 flex flex-col gap-2">
                   {suggestions.map((s) => (
-                    <button key={s.name} onClick={() => { setFuelDone(true); setShowFuelModal(false); setFuelStep("choice") }} className="flex items-start gap-3 rounded-2xl bg-[#1A2D42] p-4 text-left transition-all hover:scale-[1.01] active:scale-[0.99]">
+                    <button key={s.name} onClick={() => { setFuelDone(true); setShowFuelModal(false); setFuelStep("choice"); triggerReflection() }} className="flex items-start gap-3 rounded-2xl bg-[#1A2D42] p-4 text-left transition-all hover:scale-[1.01] active:scale-[0.99]">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D4872C]/15"><UtensilsCrossed className="h-5 w-5 text-[#D4872C]" /></div>
                       <div className="flex-1">
                         <p className="text-sm font-bold text-white">{s.name}</p>
@@ -688,7 +718,7 @@ export default function HomePage() {
             <DialogDescription className="text-sm text-[#8AA8C7]">Write it down and lock it away. Open it with your therapist.</DialogDescription>
           </DialogHeader>
           <textarea value={worryText} onChange={(e) => setWorryText(e.target.value)} placeholder="What is worrying you?" className="mt-3 min-h-28 w-full rounded-xl border-0 bg-[#1A2D42] p-4 text-sm text-white placeholder:text-[#5A8AAF] focus:outline-none focus:ring-2 focus:ring-[#2E8B57]" />
-          <Button onClick={() => { setWorryText(""); setShowWorryBox(false) }} className="mt-3 w-full rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]"><Lock className="mr-2 h-4 w-4" /> Lock it Away</Button>
+          <Button onClick={() => { setWorryText(""); setShowWorryBox(false); triggerReflection() }} className="mt-3 w-full rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]"><Lock className="mr-2 h-4 w-4" /> Lock it Away</Button>
         </DialogContent>
       </Dialog>
 
@@ -707,7 +737,7 @@ export default function HomePage() {
               <div className={`flex h-28 w-28 items-center justify-center rounded-full transition-all duration-1000 ${breathCount % 2 === 0 ? "scale-100 bg-[#4ECDC4]/20" : "scale-125 bg-[#4ECDC4]/40"}`}>
                 <span className="text-2xl font-bold text-[#4ECDC4]">{breathCount % 2 === 0 ? "Breathe In" : "Breathe Out"}</span>
               </div>
-              <Button onClick={() => setBreathCount((c) => c + 1)} className="rounded-xl bg-[#4ECDC4] text-white hover:bg-[#3DBDB5]"><Wind className="mr-2 h-4 w-4" /> {breathCount === 0 ? "Start" : "Next Breath"} ({breathCount}/6)</Button>
+              <Button onClick={() => { setBreathCount((c) => c + 1); if (breathCount >= 5) triggerReflection() }} className="rounded-xl bg-[#4ECDC4] text-white hover:bg-[#3DBDB5]"><Wind className="mr-2 h-4 w-4" /> {breathCount === 0 ? "Start" : "Next Breath"} ({breathCount}/6)</Button>
             </div>
           )}
           {showRoadblock?.id === "stretch" && (
@@ -724,7 +754,7 @@ export default function HomePage() {
             <div className="mt-4 flex flex-col items-center gap-3">
               <Heart className="h-16 w-16 text-[#1E90FF]" />
               <p className="text-base font-bold text-white">Go drink a glass of water right now!</p>
-              <Button onClick={() => setShowRoadblock(null)} className="rounded-xl bg-[#1E90FF] text-white hover:bg-[#1878D6]"><Heart className="mr-2 h-4 w-4" /> Done!</Button>
+              <Button onClick={() => { setShowRoadblock(null); triggerReflection() }} className="rounded-xl bg-[#1E90FF] text-white hover:bg-[#1878D6]"><Heart className="mr-2 h-4 w-4" /> Done!</Button>
             </div>
           )}
         </DialogContent>
@@ -739,8 +769,8 @@ export default function HomePage() {
           </DialogHeader>
           <textarea value={thoughtText} onChange={(e) => setThoughtText(e.target.value)} placeholder="Write a thought..." className="mt-3 min-h-20 w-full rounded-xl border-0 bg-[#1A2D42] p-4 text-sm text-white placeholder:text-[#5A8AAF] focus:outline-none focus:ring-2 focus:ring-[#9B59B6]" />
           <div className="mt-3 flex gap-3">
-            <Button onClick={() => setThoughtText("")} variant="outline" className="flex-1 rounded-xl border-[#E84535]/40 text-[#E84535] hover:bg-[#E84535]/10"><Trash2 className="mr-2 h-4 w-4" /> Trash It</Button>
-            <Button onClick={() => setThoughtText("")} className="flex-1 rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]"><Gem className="mr-2 h-4 w-4" /> Keep It</Button>
+            <Button onClick={() => { setThoughtText(""); triggerReflection() }} variant="outline" className="flex-1 rounded-xl border-[#E84535]/40 text-[#E84535] hover:bg-[#E84535]/10"><Trash2 className="mr-2 h-4 w-4" /> Trash It</Button>
+            <Button onClick={() => { setThoughtText(""); triggerReflection() }} className="flex-1 rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]"><Gem className="mr-2 h-4 w-4" /> Keep It</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -760,7 +790,7 @@ export default function HomePage() {
               </button>
             ))}
           </div>
-          <Button className="mt-4 w-full rounded-xl bg-[#DDA0DD] text-[#1A1014] hover:bg-[#CC8FCC]"><Wind className="mr-2 h-4 w-4" /> Begin Breathing</Button>
+          <Button onClick={() => { setShowMeditation(false); triggerReflection() }} className="mt-4 w-full rounded-xl bg-[#DDA0DD] text-[#1A1014] hover:bg-[#CC8FCC]"><Wind className="mr-2 h-4 w-4" /> Begin Breathing</Button>
         </DialogContent>
       </Dialog>
 
@@ -864,7 +894,7 @@ export default function HomePage() {
                 <span className="text-sm font-bold" style={{ color: showBoostModal.color }}>Upload Photo Proof</span>
               </button>
               <Button
-                onClick={() => { setCompletedBoosts((prev) => [...prev, showBoostModal.id]); setShowBoostModal(null) }}
+                onClick={() => { setCompletedBoosts((prev) => [...prev, showBoostModal.id]); setShowBoostModal(null); triggerReflection() }}
                 className="mt-3 w-full rounded-xl text-white"
                 style={{ backgroundColor: showBoostModal.color }}
               >
@@ -934,7 +964,7 @@ export default function HomePage() {
               </button>
             ))}
           </div>
-          <Button className="mt-3 w-full rounded-xl bg-[#D4872C] text-white hover:bg-[#B8711E]"><Camera className="mr-2 h-4 w-4" /> Upload Meal Photo</Button>
+          <Button onClick={() => { setShowRecipes(false); triggerReflection() }} className="mt-3 w-full rounded-xl bg-[#D4872C] text-white hover:bg-[#B8711E]"><Camera className="mr-2 h-4 w-4" /> Upload Meal Photo</Button>
         </DialogContent>
       </Dialog>
 
@@ -964,6 +994,27 @@ export default function HomePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ---- Positive Reflection Popup ---- */}
+      {showReflection && (
+        <div className="pointer-events-none fixed inset-0 z-[100] flex items-end justify-center pb-28">
+          <button
+            onClick={() => setShowReflection(null)}
+            className="pointer-events-auto animate-in fade-in slide-in-from-bottom-6 duration-500 flex flex-col items-center gap-2 rounded-3xl bg-[#2E8B57] px-8 py-5 text-center shadow-[0_8px_40px_rgba(46,139,87,0.45)]"
+          >
+            {/* Sparkle ring */}
+            <div className="relative mb-1">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/15">
+                <Sparkles className="h-7 w-7 text-white" />
+              </div>
+              <div className="absolute -inset-2 animate-ping rounded-full border-2 border-white/20" style={{ animationDuration: "1.5s" }} />
+            </div>
+            <p className="text-lg font-extrabold text-white">{showReflection.title}</p>
+            <p className="max-w-64 text-sm leading-relaxed text-white/85">{showReflection.message}</p>
+            <span className="mt-1 text-xs text-white/50">tap to dismiss</span>
+          </button>
+        </div>
+      )}
     </div>
   )
 }
