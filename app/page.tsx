@@ -6,7 +6,9 @@ import {
   Droplets, Wind, StretchHorizontal, Camera, Package, Lock,
   CalendarCheck, Sparkles, Heart, Search, AlertTriangle, Brain,
   Trash2, Gem, Trophy, Users, Dumbbell, ChefHat, Bell,
-  MessageCircle, Send, Footprints, PersonStanding
+  MessageCircle, Send, Footprints, PersonStanding, Star,
+  Music, Image, PenLine, Zap, Smile, Palette, BookOpen,
+  HandMetal, Shield, Bike, BrainCircuit, Gauge, HeartHandshake
 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -118,6 +120,32 @@ const leaderboard = [
 /* -- Premade emotes/messages -- */
 const quickMessages = ["Way to go!", "Keep it up!", "You inspire me!", "Almost there!", "Stay strong!"]
 
+/* -- Extra XP opportunities -- */
+const extraXpItems = [
+  { id: "journal", label: "Journal Entry", desc: "+10 XP per entry", xp: 10, icon: PenLine, color: "#2E8B57" },
+  { id: "sing", label: "Sing a Song", desc: "+15 XP record yourself singing", xp: 15, icon: Music, color: "#DDA0DD" },
+  { id: "long-journal", label: "Extra / Longer Entry", desc: "+20 XP for 2+ min recording", xp: 20, icon: BookOpen, color: "#1E90FF" },
+  { id: "images", label: "Images Uploaded", desc: "+5 XP per photo today", xp: 5, icon: Image, color: "#D4872C" },
+  { id: "social", label: "Socialization", desc: "+10 XP send a preset message", xp: 10, icon: MessageCircle, color: "#FFD700" },
+]
+
+/* -- Boost categories -- */
+const boostCategories = [
+  { id: "body", label: "Body", icon: HeartHandshake, color: "#FF6B35" },
+  { id: "joy", label: "Joy", icon: Smile, color: "#FFD700" },
+  { id: "creativity", label: "Creativity", icon: Palette, color: "#DDA0DD" },
+  { id: "brain", label: "Brain", icon: Brain, color: "#1E90FF" },
+  { id: "life", label: "Life", icon: Star, color: "#2E8B57" },
+  { id: "social", label: "Social", icon: Users, color: "#FF9F43" },
+  { id: "scavenger", label: "Scavenger", icon: Search, color: "#4ECDC4" },
+  { id: "confidence", label: "Confidence", icon: Shield, color: "#E84535" },
+  { id: "movement", label: "Movement", icon: Bike, color: "#FF6B35" },
+  { id: "creative", label: "Creative", icon: Sparkles, color: "#CD7F32" },
+  { id: "skills", label: "Skills", icon: HandMetal, color: "#8080FF" },
+  { id: "exec-function", label: "Exec Function", icon: BrainCircuit, color: "#7F9BAA" },
+  { id: "regulation", label: "Regulation", icon: Gauge, color: "#9B59B6" },
+]
+
 /* -- Workout routines -- */
 const outdoorActivities = [
   { label: "Collective Walk", desc: "Walk 20 min and earn chips", icon: Footprints, reward: "walking chips" },
@@ -153,6 +181,10 @@ export default function HomePage() {
   const [showRecipes, setShowRecipes] = useState(false)
   const [showFriendConnect, setShowFriendConnect] = useState(false)
   const [showReminders, setShowReminders] = useState(false)
+  const [showExtraXp, setShowExtraXp] = useState(false)
+  const [showBoosts, setShowBoosts] = useState(false)
+  const [completedXp, setCompletedXp] = useState<string[]>([])
+  const [activeBoost, setActiveBoost] = useState<string | null>(null)
   const [selectedMedChar, setSelectedMedChar] = useState(meditationCharacters[0].id)
   const [worryText, setWorryText] = useState("")
   const [thoughtText, setThoughtText] = useState("")
@@ -252,6 +284,77 @@ export default function HomePage() {
                   {isRecording ? <Pause className="h-8 w-8 text-white" /> : <Mic className="h-8 w-8 text-white" />}
                 </button>
                 <span className="text-sm font-semibold text-[#5A8AAF]">{isRecording ? "Recording..." : "Hold to record"}</span>
+              </div>
+            </section>
+
+            {/* -- Extra XP -- */}
+            <section className="rounded-3xl bg-[#13263A] p-5">
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Extra XP</h2>
+                <div className="flex items-center gap-1 rounded-full bg-[#FFD700]/15 px-3 py-1">
+                  <Zap className="h-3.5 w-3.5 text-[#FFD700]" />
+                  <span className="text-xs font-bold text-[#FFD700]">{completedXp.reduce((sum, id) => sum + (extraXpItems.find(x => x.id === id)?.xp ?? 0), 0)} XP today</span>
+                </div>
+              </div>
+              <p className="mb-3 text-sm text-[#8AA8C7]">Earn bonus XP through extra activities beyond your daily quest.</p>
+              <div className="flex flex-col gap-2">
+                {extraXpItems.map((item) => {
+                  const done = completedXp.includes(item.id)
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        if (!done) setCompletedXp((prev) => [...prev, item.id])
+                      }}
+                      className={`flex items-center gap-3 rounded-2xl p-4 text-left transition-all ${done ? "bg-[#2E8B57]/15 ring-1 ring-[#2E8B57]/30" : "bg-[#1A2D42] hover:scale-[1.01] active:scale-[0.99]"}`}
+                    >
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: done ? "#2E8B5722" : `${item.color}22` }}>
+                        {done ? <Star className="h-5 w-5 text-[#2E8B57]" /> : <item.icon className="h-5 w-5" style={{ color: item.color }} />}
+                      </div>
+                      <div className="flex-1">
+                        <p className={`text-sm font-bold ${done ? "text-[#A8E6B0]" : "text-white"}`}>{item.label}</p>
+                        <p className="text-xs text-[#8AA8C7]">{item.desc}</p>
+                      </div>
+                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${done ? "bg-[#2E8B57]/20 text-[#A8E6B0]" : "bg-[#FFD700]/15 text-[#FFD700]"}`}>
+                        {done ? "Done" : `+${item.xp} XP`}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+
+            {/* -- Boosts -- */}
+            <section className="rounded-3xl bg-[#13263A] p-5">
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Boosts</h2>
+                {activeBoost && (
+                  <span className="rounded-full bg-[#2E8B57]/15 px-3 py-1 text-xs font-bold text-[#A8E6B0]">
+                    Active: {boostCategories.find(b => b.id === activeBoost)?.label}
+                  </span>
+                )}
+              </div>
+              <p className="mb-3 text-sm text-[#8AA8C7]">Select a boost focus for today. Earn bonus XP in that category.</p>
+              <div className="grid grid-cols-4 gap-2">
+                {boostCategories.map((boost) => {
+                  const isActive = activeBoost === boost.id
+                  return (
+                    <button
+                      key={boost.id}
+                      onClick={() => setActiveBoost(isActive ? null : boost.id)}
+                      className={`flex flex-col items-center gap-1.5 rounded-2xl p-3 transition-all ${isActive ? "scale-105 ring-2" : "hover:scale-105"}`}
+                      style={{
+                        backgroundColor: isActive ? `${boost.color}22` : "#1A2D42",
+                        ringColor: isActive ? boost.color : undefined,
+                      }}
+                    >
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ backgroundColor: `${boost.color}22` }}>
+                        <boost.icon className="h-4.5 w-4.5" style={{ color: boost.color }} />
+                      </div>
+                      <span className="text-[10px] font-bold leading-tight text-center text-white">{boost.label}</span>
+                    </button>
+                  )
+                })}
               </div>
             </section>
 
