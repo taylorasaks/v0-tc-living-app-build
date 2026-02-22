@@ -302,6 +302,10 @@ export default function HomePage() {
   const [showFuelModal, setShowFuelModal] = useState(false)
   const [fuelStep, setFuelStep] = useState<"choice" | "already-ate" | "not-yet">("choice")
   const [fuelDone, setFuelDone] = useState(false)
+  const [fuelLevel, setFuelLevel] = useState(0)
+  const [fuelAnimating, setFuelAnimating] = useState(false)
+  const [characterGlowing, setCharacterGlowing] = useState(false)
+  const fuelAnimRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [showWorryBox, setShowWorryBox] = useState(false)
   const [showRoadblock, setShowRoadblock] = useState<typeof roadblocks[0] | null>(null)
   const [showThoughtSorter, setShowThoughtSorter] = useState(false)
@@ -385,6 +389,28 @@ export default function HomePage() {
     const now = new Date()
     const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     setMyDayLog((prev) => [...prev, { time, label }])
+  }
+
+  function triggerFuelAnimation() {
+    setFuelAnimating(true)
+    setCharacterGlowing(true)
+    setFuelLevel(0)
+    // Animate fuel from 0 to 100 over ~2.5s
+    let level = 0
+    if (fuelAnimRef.current) clearInterval(fuelAnimRef.current)
+    fuelAnimRef.current = setInterval(() => {
+      level += 2
+      if (level >= 100) {
+        level = 100
+        if (fuelAnimRef.current) clearInterval(fuelAnimRef.current)
+        // Keep glow for another second then settle
+        setTimeout(() => {
+          setFuelAnimating(false)
+          setCharacterGlowing(false)
+        }, 1200)
+      }
+      setFuelLevel(level)
+    }, 50)
   }
 
   function finishRecording() {
@@ -823,39 +849,140 @@ export default function HomePage() {
               </section>
             )}
 
-            {/* Fuel Check */}
+            {/* Fuel Gauge + Character */}
             <section className="rounded-3xl bg-[#13263A] p-5">
-              <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Fuel Check</h2>
-                {fuelDone && (
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Fuel Gauge</h2>
+                {fuelDone && !fuelAnimating && (
                   <span className="flex items-center gap-1 rounded-full bg-[#2E8B57]/20 px-3 py-1 text-xs font-bold text-[#A8E6B0]">
-                    <Check className="h-3 w-3" /> Fueled
+                    <Check className="h-3 w-3" /> Full
                   </span>
                 )}
               </div>
-              <p className="mb-4 text-sm text-[#8AA8C7]">
-                {fuelDone ? "Great job fueling up today!" : "Have you eaten today? Upload image of food or water. No image = half XP."}
-              </p>
+
+              {/* Character + Gauge visual */}
+              <div className="relative mb-4 flex flex-col items-center gap-4">
+                {/* Character avatar */}
+                <div
+                  className="relative flex h-24 w-24 items-center justify-center rounded-full transition-all duration-700"
+                  style={{
+                    backgroundColor: characterGlowing ? "rgba(255, 215, 0, 0.25)" : "rgba(26, 45, 66, 1)",
+                    boxShadow: characterGlowing
+                      ? "0 0 30px rgba(255, 215, 0, 0.5), 0 0 60px rgba(255, 215, 0, 0.25), 0 0 90px rgba(46, 139, 87, 0.2)"
+                      : "0 4px 20px rgba(0,0,0,0.2)",
+                    transform: characterGlowing ? "scale(1.1)" : "scale(1)",
+                  }}
+                >
+                  {/* Food absorption particles */}
+                  {fuelAnimating && (
+                    <>
+                      {[0, 60, 120, 180, 240, 300].map((deg) => (
+                        <div
+                          key={deg}
+                          className="absolute h-2.5 w-2.5 rounded-full"
+                          style={{
+                            backgroundColor: "#FFD700",
+                            top: "50%",
+                            left: "50%",
+                            animation: `absorbParticle 1.5s ease-in ${deg / 360}s infinite`,
+                            transform: `rotate(${deg}deg) translateY(-50px)`,
+                          }}
+                        />
+                      ))}
+                    </>
+                  )}
+                  {/* Character icon */}
+                  <div className={`flex h-16 w-16 items-center justify-center rounded-2xl transition-all duration-700 ${characterGlowing ? "bg-[#FFD700]/30" : "bg-[#2E8B57]/20"}`}>
+                    <PersonStanding className={`h-10 w-10 transition-colors duration-700 ${characterGlowing ? "text-[#FFD700]" : "text-[#2E8B57]"}`} />
+                  </div>
+                  {/* Glow ring */}
+                  {characterGlowing && (
+                    <div className="absolute -inset-3 rounded-full border-2 border-[#FFD700]/40 animate-ping" style={{ animationDuration: "2s" }} />
+                  )}
+                </div>
+
+                {/* Fuel gauge bar */}
+                <div className="w-full">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#5A8AAF]">Fuel Level</span>
+                    <span className={`text-sm font-extrabold tabular-nums transition-colors duration-300 ${fuelLevel >= 100 ? "text-[#2E8B57]" : fuelLevel > 0 ? "text-[#FFD700]" : "text-[#5A8AAF]"}`}>
+                      {fuelLevel}%
+                    </span>
+                  </div>
+                  <div className="h-5 w-full overflow-hidden rounded-full bg-[#1A2D42]">
+                    <div
+                      className="relative h-full rounded-full transition-all duration-200"
+                      style={{
+                        width: `${fuelLevel}%`,
+                        background: fuelLevel >= 100
+                          ? "linear-gradient(90deg, #2E8B57, #4ECDC4)"
+                          : fuelLevel > 50
+                            ? "linear-gradient(90deg, #D4872C, #FFD700)"
+                            : fuelLevel > 0
+                              ? "linear-gradient(90deg, #E84535, #D4872C)"
+                              : "transparent",
+                      }}
+                    >
+                      {/* Shimmer effect while animating */}
+                      {fuelAnimating && (
+                        <div className="absolute inset-0 overflow-hidden rounded-full">
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)",
+                              animation: "shimmer 1s ease-in-out infinite",
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {/* Marker ticks */}
+                  <div className="mt-1 flex justify-between px-0.5">
+                    {[0, 25, 50, 75, 100].map((tick) => (
+                      <span key={tick} className="text-[9px] tabular-nums text-[#5A8AAF]">{tick}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action area */}
               {!fuelDone ? (
                 <button
                   onClick={() => { setFuelStep("choice"); setShowFuelModal(true) }}
-                  className="group flex w-full flex-col items-center gap-3 rounded-2xl bg-[#1A2D42] p-6 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  className="group flex w-full items-center gap-4 rounded-2xl bg-[#1A2D42] p-5 transition-all hover:scale-[1.01] active:scale-[0.99]"
                 >
-                  <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-[#D4872C]/15 transition-transform group-hover:scale-110">
-                    <UtensilsCrossed className="h-10 w-10 text-[#D4872C]" />
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#D4872C]/15 transition-transform group-hover:scale-110">
+                    <Camera className="h-7 w-7 text-[#D4872C]" />
                   </div>
-                  <span className="text-base font-bold text-white">Add Fuel</span>
-                  <span className="text-xs text-[#8AA8C7]">Log a meal or get suggestions</span>
+                  <div className="flex-1 text-left">
+                    <p className="text-base font-bold text-white">Upload Food Photo</p>
+                    <p className="text-xs text-[#8AA8C7]">Take a photo to fill your fuel gauge</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-[#5A8AAF]" />
                 </button>
-              ) : (
+              ) : !fuelAnimating ? (
                 <div className="flex items-center gap-3 rounded-2xl bg-[#2E8B57]/10 p-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#2E8B57]/20">
                     <Check className="h-6 w-6 text-[#2E8B57]" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-[#A8E6B0]">Fuel logged for today</p>
+                    <p className="text-sm font-bold text-[#A8E6B0]">Fully fueled!</p>
                     <p className="text-xs text-[#8AA8C7]">+15 {currency.name} earned</p>
                   </div>
+                  <button
+                    onClick={() => { setFuelDone(false); setFuelLevel(0); setFuelStep("choice"); setShowFuelModal(true) }}
+                    className="rounded-lg bg-[#1A2D42] px-3 py-1.5 text-xs font-bold text-[#8AA8C7] transition-colors hover:bg-[#243B55]"
+                  >
+                    Re-fuel
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2 py-2">
+                  <div className="h-2 w-2 rounded-full bg-[#FFD700] animate-bounce" style={{ animationDelay: "0s" }} />
+                  <div className="h-2 w-2 rounded-full bg-[#FFD700] animate-bounce" style={{ animationDelay: "0.15s" }} />
+                  <div className="h-2 w-2 rounded-full bg-[#FFD700] animate-bounce" style={{ animationDelay: "0.3s" }} />
+                  <span className="ml-2 text-sm font-bold text-[#FFD700]">Absorbing fuel...</span>
                 </div>
               )}
             </section>
@@ -1151,7 +1278,7 @@ export default function HomePage() {
                   <span className="text-xs text-[#5A8AAF]">or upload from gallery</span>
                 </button>
                 <textarea placeholder="What did you eat? (optional)" className="min-h-20 w-full rounded-xl border-0 bg-[#1A2D42] p-4 text-sm text-white placeholder:text-[#5A8AAF] focus:outline-none focus:ring-2 focus:ring-[#2E8B57]" />
-                <Button onClick={() => { setFuelDone(true); setShowFuelModal(false); setFuelStep("choice"); addToMyDay("Fuel: logged a meal"); triggerReflection() }} className="w-full rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]">
+                <Button onClick={() => { setFuelDone(true); setShowFuelModal(false); setFuelStep("choice"); setActiveTab("journey"); addToMyDay("Fuel: logged a meal"); triggerFuelAnimation(); triggerReflection() }} className="w-full rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]">
                   <Check className="mr-2 h-4 w-4" /> Log Meal (+15 {currency.name})
                 </Button>
               </div>
@@ -1168,7 +1295,7 @@ export default function HomePage() {
                 </DialogHeader>
                 <div className="mt-4 flex flex-col gap-2">
                   {suggestions.map((s) => (
-                    <button key={s.name} onClick={() => { setFuelDone(true); setShowFuelModal(false); setFuelStep("choice"); addToMyDay(`Fuel: chose ${s.name}`); triggerReflection() }} className="flex items-start gap-3 rounded-2xl bg-[#1A2D42] p-4 text-left transition-all hover:scale-[1.01] active:scale-[0.99]">
+                    <button key={s.name} onClick={() => { setFuelDone(true); setShowFuelModal(false); setFuelStep("choice"); setActiveTab("journey"); addToMyDay(`Fuel: chose ${s.name}`); triggerFuelAnimation(); triggerReflection() }} className="flex items-start gap-3 rounded-2xl bg-[#1A2D42] p-4 text-left transition-all hover:scale-[1.01] active:scale-[0.99]">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D4872C]/15"><UtensilsCrossed className="h-5 w-5 text-[#D4872C]" /></div>
                       <div className="flex-1">
                         <p className="text-sm font-bold text-white">{s.name}</p>

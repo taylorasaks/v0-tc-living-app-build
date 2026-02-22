@@ -114,3 +114,29 @@
     opacity: 0;
   }
 }
+
+/* Fuel absorption particle animation */
+@keyframes absorbParticle {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--tw-rotate, 0deg)) translateY(-60px) scale(0.3);
+  }
+  40% {
+    opacity: 1;
+    transform: rotate(var(--tw-rotate, 0deg)) translateY(-30px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--tw-rotate, 0deg)) translateY(0px) scale(0);
+  }
+}
+
+/* Shimmer on fuel bar */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}

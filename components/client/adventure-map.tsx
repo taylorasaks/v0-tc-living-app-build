@@ -23,7 +23,6 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
 import Link from "next/link"
 
 /* -- Exported Types -- */
@@ -133,7 +132,6 @@ export function AdventureMap({ theme }: { theme: AdventureTheme }) {
   const [monsterSize, setMonsterSize] = useState(100) // shrinks as user works through it
   const [movementTier] = useState(0)
   const [triggerActive, setTriggerActive] = useState(false)
-  const fuelLevel = 65
   const xp = 240
   const cur = xpCurrencies[theme.name] ?? { name: "XP", emoji: "\u{2B50}", color: "#FFD700" }
 
@@ -232,21 +230,8 @@ export function AdventureMap({ theme }: { theme: AdventureTheme }) {
         <main className="flex min-h-0 flex-1 flex-col">
           {activeTab === "map" ? (
             <div className="relative flex min-h-0 flex-1 flex-col">
-              {/* Fuel + Vehicle/Character Bar */}
+              {/* Vehicle/Character Bar */}
               <div className="sticky top-0 z-10 mx-4 mt-2 flex flex-col gap-2 rounded-2xl px-4 py-3 backdrop-blur-md" style={{ backgroundColor: theme.topBarBg }}>
-                <div className="flex items-center gap-3">
-                  <div className="flex flex-1 flex-col gap-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wide" style={{ color: theme.textDark }}>Fuel</span>
-                      <span className="text-xs font-bold" style={{ color: theme.textDark }}>{movementTiers[movementTier]} mode</span>
-                    </div>
-                    <Progress value={fuelLevel} className="h-3.5 rounded-full" style={{ backgroundColor: theme.fuelTrack }} />
-                  </div>
-                  <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5" style={{ backgroundColor: `${theme.primaryColor}22` }}>
-                    <Flame className="h-4 w-4 text-[#FF6B35]" />
-                    <span className="text-xs font-bold" style={{ color: theme.textDark }}>5</span>
-                  </div>
-                </div>
                 <div className="flex items-center gap-2">
                   <button onClick={() => setShowVehiclePicker(true)} className="flex flex-1 items-center gap-2 rounded-xl px-3 py-2 transition-colors hover:bg-black/5" style={{ backgroundColor: `${theme.primaryColor}15` }}>
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: `${theme.primaryColor}30` }}>{activeVehicle?.icon}</div>
