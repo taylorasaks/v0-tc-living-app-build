@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from "react"
 import {
-  Coins, Flame, Mic, Pause, Play, ChevronRight, MapPin,
+  Coins, Flame, Mic, Pause, ChevronRight, MapPin,
   Droplets, Wind, StretchHorizontal, Camera, Package, Lock,
   CalendarCheck, Sparkles, Heart, Search, AlertTriangle, Brain,
-  Trash2, Gem, BookOpen
+  Trash2, Gem, Trophy, Users, Dumbbell, ChefHat, Bell,
+  MessageCircle, Send, Footprints, PersonStanding
 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -14,20 +15,20 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
 
-/* ─── Time-based question cycling ─── */
-const morningQuestions = [
+/* -- Time-based question cycling -- */
+const morningQs = [
   "What are you excited for today?",
   "What is for breakfast?",
   "How did you sleep last night?",
   "What is one thing you want to accomplish today?",
 ]
-const afternoonQuestions = [
+const afternoonQs = [
   "How was your morning?",
   "What have you done so far today?",
   "Did you drink enough water?",
   "What is something kind you did for yourself?",
 ]
-const eveningQuestions = [
+const eveningQs = [
   "How was your day?",
   "What was the best part of today?",
   "What is one thing you are grateful for?",
@@ -44,11 +45,11 @@ function getTimeGreeting() {
 function getTodayQuestion() {
   const { period } = getTimeGreeting()
   const day = new Date().getDate()
-  const questions = period === "morning" ? morningQuestions : period === "afternoon" ? afternoonQuestions : eveningQuestions
-  return questions[day % questions.length]
+  const qs = period === "morning" ? morningQs : period === "afternoon" ? afternoonQs : eveningQs
+  return qs[day % qs.length]
 }
 
-/* ─── Adventures config ─── */
+/* -- Adventures config -- */
 const adventures = [
   { id: "jungle", name: "Jungle", tagline: "Swing through the canopy", href: "/jungle", gradient: "from-[#0D3B1E] to-[#1A5C30]", border: "border-[#2E8B57]/40", iconBg: "bg-[#2E8B57]", textColor: "text-[#A8E6B0]", accent: "#2E8B57" },
   { id: "savannah", name: "Savannah", tagline: "Roam the golden plains", href: "/savannah", gradient: "from-[#5A3200] to-[#8B6914]", border: "border-[#D4872C]/40", iconBg: "bg-[#D4872C]", textColor: "text-[#FFD699]", accent: "#D4872C" },
@@ -61,46 +62,79 @@ const adventures = [
   { id: "atlantis", name: "Atlantis", tagline: "Discover the lost city", href: "/atlantis", gradient: "from-[#0D2B3E] to-[#1A5060]", border: "border-[#00CED1]/40", iconBg: "bg-[#00CED1]", textColor: "text-[#A0F0F0]", accent: "#00CED1" },
 ]
 
-/* ─── Landscape icon SVGs ─── */
+/* -- Landscape icon SVGs -- */
 function LandscapeIcon({ id }: { id: string }) {
-  const size = "h-7 w-7"
+  const s = "h-7 w-7"
   switch (id) {
-    case "jungle": return <svg viewBox="0 0 32 32" className={size}><path d="M16 2C12 8 8 10 8 16c0 6 4 14 8 14s8-8 8-14c0-6-4-8-8-14z" fill="#2E8B57"/><path d="M16 8c-2 4-4 5-4 8s2 8 4 8 4-5 4-8-2-4-4-8z" fill="#A8E6B0"/></svg>
-    case "savannah": return <svg viewBox="0 0 32 32" className={size}><rect x="14" y="8" width="4" height="16" rx="2" fill="#D4872C"/><ellipse cx="16" cy="8" rx="10" ry="5" fill="#D4872C"/><ellipse cx="16" cy="7" rx="7" ry="3.5" fill="#E8B84B"/></svg>
-    case "ocean": return <svg viewBox="0 0 32 32" className={size}><path d="M2 16 Q8 10 16 16 Q24 22 30 16" fill="none" stroke="#1E90FF" strokeWidth="3"/><path d="M2 22 Q8 16 16 22 Q24 28 30 22" fill="none" stroke="#1E90FF" strokeWidth="2" opacity=".5"/></svg>
-    case "desert": return <svg viewBox="0 0 32 32" className={size}><path d="M4 28 Q10 12 16 16 Q22 20 28 6" fill="none" stroke="#E8A435" strokeWidth="3"/><circle cx="26" cy="6" r="4" fill="#FFD700"/></svg>
-    case "mountains": return <svg viewBox="0 0 32 32" className={size}><path d="M2 28 L12 8 L16 14 L22 4 L30 28Z" fill="#7F9BAA"/><path d="M12 8 L14 12 L10 12Z" fill="white"/><path d="M22 4 L25 10 L19 10Z" fill="white"/></svg>
-    case "antarctica": return <svg viewBox="0 0 32 32" className={size}><ellipse cx="16" cy="22" rx="14" ry="8" fill="#89CFF0"/><ellipse cx="16" cy="20" rx="10" ry="6" fill="white"/><circle cx="12" cy="18" r="1" fill="#1B3A4B"/><circle cx="20" cy="18" r="1" fill="#1B3A4B"/></svg>
-    case "volcano": return <svg viewBox="0 0 32 32" className={size}><path d="M4 28 L14 8 L18 8 L28 28Z" fill="#8B2020"/><path d="M14 8 Q16 2 18 8" fill="#E84535"/><circle cx="16" cy="4" r="2" fill="#FFD700" opacity=".6"/></svg>
-    case "city": return <svg viewBox="0 0 32 32" className={size}><rect x="4" y="14" width="6" height="14" fill="#8080FF"/><rect x="12" y="8" width="8" height="20" fill="#6060DD"/><rect x="22" y="12" width="6" height="16" fill="#8080FF"/><rect x="14" y="10" width="2" height="2" fill="#FFD700"/><rect x="14" y="14" width="2" height="2" fill="#FFD700"/></svg>
-    case "atlantis": return <svg viewBox="0 0 32 32" className={size}><path d="M8 28 L12 14 L16 10 L20 14 L24 28Z" fill="#00CED1" opacity=".6"/><circle cx="16" cy="10" r="3" fill="#00CED1"/><path d="M6 24 Q16 18 26 24" fill="none" stroke="#00CED1" strokeWidth="1.5"/></svg>
+    case "jungle": return <svg viewBox="0 0 32 32" className={s}><path d="M16 2C12 8 8 10 8 16c0 6 4 14 8 14s8-8 8-14c0-6-4-8-8-14z" fill="#2E8B57"/><path d="M16 8c-2 4-4 5-4 8s2 8 4 8 4-5 4-8-2-4-4-8z" fill="#A8E6B0"/></svg>
+    case "savannah": return <svg viewBox="0 0 32 32" className={s}><rect x="14" y="8" width="4" height="16" rx="2" fill="#D4872C"/><ellipse cx="16" cy="8" rx="10" ry="5" fill="#D4872C"/><ellipse cx="16" cy="7" rx="7" ry="3.5" fill="#E8B84B"/></svg>
+    case "ocean": return <svg viewBox="0 0 32 32" className={s}><path d="M2 16 Q8 10 16 16 Q24 22 30 16" fill="none" stroke="#1E90FF" strokeWidth="3"/><path d="M2 22 Q8 16 16 22 Q24 28 30 22" fill="none" stroke="#1E90FF" strokeWidth="2" opacity=".5"/></svg>
+    case "desert": return <svg viewBox="0 0 32 32" className={s}><path d="M4 28 Q10 12 16 16 Q22 20 28 6" fill="none" stroke="#E8A435" strokeWidth="3"/><circle cx="26" cy="6" r="4" fill="#FFD700"/></svg>
+    case "mountains": return <svg viewBox="0 0 32 32" className={s}><path d="M2 28 L12 8 L16 14 L22 4 L30 28Z" fill="#7F9BAA"/><path d="M12 8 L14 12 L10 12Z" fill="white"/><path d="M22 4 L25 10 L19 10Z" fill="white"/></svg>
+    case "antarctica": return <svg viewBox="0 0 32 32" className={s}><ellipse cx="16" cy="22" rx="14" ry="8" fill="#89CFF0"/><ellipse cx="16" cy="20" rx="10" ry="6" fill="white"/></svg>
+    case "volcano": return <svg viewBox="0 0 32 32" className={s}><path d="M4 28 L14 8 L18 8 L28 28Z" fill="#8B2020"/><path d="M14 8 Q16 2 18 8" fill="#E84535"/></svg>
+    case "city": return <svg viewBox="0 0 32 32" className={s}><rect x="4" y="14" width="6" height="14" fill="#8080FF"/><rect x="12" y="8" width="8" height="20" fill="#6060DD"/><rect x="22" y="12" width="6" height="16" fill="#8080FF"/><rect x="14" y="10" width="2" height="2" fill="#FFD700"/></svg>
+    case "atlantis": return <svg viewBox="0 0 32 32" className={s}><path d="M8 28 L12 14 L16 10 L20 14 L24 28Z" fill="#00CED1" opacity=".6"/><circle cx="16" cy="10" r="3" fill="#00CED1"/></svg>
     default: return null
   }
 }
 
-/* ─── Daily Tasks for fuel ─── */
+/* -- Daily tasks for fuel -- */
 const dailyTasks = [
-  { id: "groceries", label: "Get Groceries", icon: "cart" },
-  { id: "bills", label: "Pay a Bill", icon: "bill" },
-  { id: "meal", label: "Make a Meal", icon: "cook" },
-  { id: "bed", label: "Make Your Bed", icon: "bed" },
-  { id: "movement", label: "Movement / Walk", icon: "walk" },
-  { id: "health", label: "Health Appointment", icon: "health" },
+  { id: "groceries", label: "Get Groceries" },
+  { id: "bills", label: "Pay a Bill" },
+  { id: "meal", label: "Make a Meal" },
+  { id: "bed", label: "Make Your Bed" },
+  { id: "movement", label: "Movement / Walk" },
+  { id: "health", label: "Health Appointment" },
 ]
 
-/* ─── Roadblock exercises ─── */
+/* -- Roadblock exercises -- */
 const roadblocks = [
   { id: "breathe", label: "Time to Breathe", desc: "Blow away the boulder with deep breaths", icon: Wind, color: "#4ECDC4" },
   { id: "stretch", label: "Time to Stretch", desc: "Stretch your way around the boulder", icon: StretchHorizontal, color: "#FF9F43" },
   { id: "water", label: "Drink Water", desc: "Wash the boulder away with hydration", icon: Droplets, color: "#1E90FF" },
 ]
 
-/* ─── Meditation characters ─── */
+/* -- Meditation characters -- */
 const meditationCharacters = [
   { id: "explorer", label: "Explorer", color: "#2E8B57" },
   { id: "fairy", label: "Fairy", color: "#DDA0DD" },
   { id: "wizard", label: "Wizard", color: "#8080FF" },
   { id: "knight", label: "Knight", color: "#7F9BAA" },
+  { id: "captain", label: "Captain", color: "#1E90FF" },
+  { id: "sorcerist", label: "Sorcerist", color: "#E84535" },
+]
+
+/* -- Leaderboard mock data -- */
+const leaderboard = [
+  { name: "You", coins: 240, rank: 3 },
+  { name: "Alex R.", coins: 410, rank: 1 },
+  { name: "Jordan L.", coins: 310, rank: 2 },
+  { name: "Sam N.", coins: 195, rank: 4 },
+  { name: "Taylor B.", coins: 120, rank: 5 },
+]
+
+/* -- Premade emotes/messages -- */
+const quickMessages = ["Way to go!", "Keep it up!", "You inspire me!", "Almost there!", "Stay strong!"]
+
+/* -- Workout routines -- */
+const outdoorActivities = [
+  { label: "Collective Walk", desc: "Walk 20 min and earn chips", icon: Footprints, reward: "walking chips" },
+  { label: "Outdoor Jog", desc: "Jog around the block", icon: PersonStanding, reward: "movement coins" },
+]
+const indoorWorkouts = [
+  { label: "Explorer Workout", desc: "Follow along with Explorer", char: "Explorer" },
+  { label: "Knight Strength", desc: "Bodyweight moves with Knight", char: "Knight" },
+  { label: "Fairy Stretch", desc: "Gentle stretching with Fairy", char: "Fairy" },
+]
+
+/* -- Recipes / Fuel -- */
+const recipes = [
+  { id: "smoothie", name: "Power Smoothie", desc: "Banana, spinach, peanut butter, oat milk", difficulty: "Easy" },
+  { id: "stirfry", name: "Quick Stir-Fry", desc: "Veggies, rice, soy sauce, sesame oil", difficulty: "Easy" },
+  { id: "omelette", name: "Veggie Omelette", desc: "Eggs, peppers, onions, cheese", difficulty: "Easy" },
+  { id: "wrap", name: "Chicken Wrap", desc: "Grilled chicken, lettuce, tomato, tortilla", difficulty: "Medium" },
 ]
 
 export default function HomePage() {
@@ -114,11 +148,17 @@ export default function HomePage() {
   const [showMeditation, setShowMeditation] = useState(false)
   const [showMilestone, setShowMilestone] = useState(false)
   const [showTrigger, setShowTrigger] = useState(false)
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showMovement, setShowMovement] = useState(false)
+  const [showRecipes, setShowRecipes] = useState(false)
+  const [showFriendConnect, setShowFriendConnect] = useState(false)
+  const [showReminders, setShowReminders] = useState(false)
   const [selectedMedChar, setSelectedMedChar] = useState(meditationCharacters[0].id)
   const [worryText, setWorryText] = useState("")
   const [thoughtText, setThoughtText] = useState("")
   const [breathCount, setBreathCount] = useState(0)
   const [section, setSection] = useState<"home" | "adventures">("home")
+  const [friendMsg, setFriendMsg] = useState("")
   const recordTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const coins = 240
@@ -128,7 +168,6 @@ export default function HomePage() {
   const question = getTodayQuestion()
   const activeAdventure = adventures[0]
 
-  // Simulate voice journal unlock after recording for 2s
   useEffect(() => {
     if (isRecording) {
       recordTimerRef.current = setTimeout(() => {
@@ -143,100 +182,100 @@ export default function HomePage() {
 
   return (
     <div className="flex h-dvh flex-col bg-[#0C1B2A]">
-      {/* ── Top Bar ── */}
+      {/* -- Top Bar -- */}
       <header className="flex shrink-0 items-center justify-between px-5 pt-5 pb-2">
         <div className="flex items-center gap-2 rounded-full bg-[#1A2D42] px-4 py-2">
           <Coins className="h-5 w-5 text-[#FFD700]" />
           <span className="text-base font-bold text-[#FFD700]">{coins}</span>
         </div>
-        <div className="flex items-center gap-2 rounded-full bg-[#1A2D42] px-4 py-2">
-          <Flame className="h-5 w-5 text-[#FF6B35]" />
-          <span className="text-base font-bold text-[#FF6B35]">{streak} day streak</span>
+        <div className="flex items-center gap-4">
+          <button onClick={() => setShowLeaderboard(true)} className="flex items-center gap-1.5 rounded-full bg-[#1A2D42] px-3 py-2 transition-colors hover:bg-[#243B55]" aria-label="Leaderboard">
+            <Trophy className="h-4 w-4 text-[#FFD700]" />
+            <span className="text-xs font-bold text-[#FFD700]">{"#3"}</span>
+          </button>
+          <div className="flex items-center gap-2 rounded-full bg-[#1A2D42] px-4 py-2">
+            <Flame className="h-5 w-5 text-[#FF6B35]" />
+            <span className="text-base font-bold text-[#FF6B35]">{streak}d</span>
+          </div>
         </div>
       </header>
 
-      {/* ── Tab switcher ── */}
+      {/* -- Tab switcher -- */}
       <div className="flex shrink-0 items-center gap-1 px-5 pt-1 pb-3">
-        <button
-          onClick={() => setSection("home")}
-          className={`flex-1 rounded-xl py-2 text-sm font-bold transition-colors ${section === "home" ? "bg-[#2E8B57] text-white" : "bg-[#1A2D42] text-[#5A8AAF]"}`}
-        >
+        <button onClick={() => setSection("home")} className={`flex-1 rounded-xl py-2 text-sm font-bold transition-colors ${section === "home" ? "bg-[#2E8B57] text-white" : "bg-[#1A2D42] text-[#5A8AAF]"}`}>
           Journal
         </button>
-        <button
-          onClick={() => setSection("adventures")}
-          className={`flex-1 rounded-xl py-2 text-sm font-bold transition-colors ${section === "adventures" ? "bg-[#2E8B57] text-white" : "bg-[#1A2D42] text-[#5A8AAF]"}`}
-        >
+        <button onClick={() => setSection("adventures")} className={`flex-1 rounded-xl py-2 text-sm font-bold transition-colors ${section === "adventures" ? "bg-[#2E8B57] text-white" : "bg-[#1A2D42] text-[#5A8AAF]"}`}>
           Adventures
         </button>
       </div>
 
-      {/* ── Scrollable Content ── */}
+      {/* -- Scrollable Content -- */}
       <main className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6">
-
         {section === "home" ? (
           <>
-            {/* ── Greeting ── */}
+            {/* -- Friend Connection Banner -- */}
+            <button onClick={() => setShowFriendConnect(true)} className="flex items-center gap-3 rounded-2xl bg-[#1A2D42] p-4 text-left transition-transform hover:scale-[1.01] active:scale-[0.99]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2E8B57]/20">
+                <MessageCircle className="h-5 w-5 text-[#2E8B57]" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-white">Friend Connection</p>
+                <p className="text-xs text-[#8AA8C7]">Send a cheer to someone on the leaderboard</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-[#5A8AAF]" />
+            </button>
+
+            {/* -- Greeting -- */}
             <section className="text-center">
-              <h1 className="text-3xl font-extrabold tracking-tight text-white text-balance">
-                {greeting}, Explorer
-              </h1>
+              <h1 className="text-3xl font-extrabold tracking-tight text-white text-balance">{greeting}, Explorer</h1>
               <p className="mt-1 text-base text-[#8AA8C7]">
                 {journalUnlocked ? "Journal unlocked. Your quest awaits." : "Unlock your quest with your voice."}
               </p>
             </section>
 
-            {/* ── Voice Journal Card ── */}
+            {/* -- Voice Journal Card -- */}
             <section className="rounded-3xl bg-[#13263A] p-6">
               <div className="mb-1 flex items-center justify-between">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">
-                  {"Today's Journal"}
-                </h2>
-                {journalUnlocked && (
-                  <span className="rounded-full bg-[#2E8B57]/20 px-3 py-1 text-xs font-bold text-[#A8E6B0]">Unlocked</span>
-                )}
+                <h2 className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">{"Today's Journal"}</h2>
+                {journalUnlocked && <span className="rounded-full bg-[#2E8B57]/20 px-3 py-1 text-xs font-bold text-[#A8E6B0]">Unlocked</span>}
               </div>
               <p className="mb-5 text-lg font-bold leading-relaxed text-white">{question}</p>
               <div className="flex flex-col items-center gap-3">
                 <button
-                  onMouseDown={() => setIsRecording(true)}
-                  onMouseUp={() => setIsRecording(false)}
-                  onMouseLeave={() => setIsRecording(false)}
-                  onTouchStart={() => setIsRecording(true)}
-                  onTouchEnd={() => setIsRecording(false)}
+                  onMouseDown={() => setIsRecording(true)} onMouseUp={() => setIsRecording(false)} onMouseLeave={() => setIsRecording(false)}
+                  onTouchStart={() => setIsRecording(true)} onTouchEnd={() => setIsRecording(false)}
                   className={`flex h-20 w-20 items-center justify-center rounded-full transition-all ${isRecording ? "scale-110 bg-[#FF6B6B]" : "bg-[#2E8B57] hover:bg-[#24734A]"}`}
                   style={{ boxShadow: isRecording ? "0 0 0 8px rgba(255,107,107,0.25), 0 0 24px rgba(255,107,107,0.3)" : "0 4px 20px rgba(46,139,87,0.35)" }}
                   aria-label="Hold to record your voice journal"
                 >
                   {isRecording ? <Pause className="h-8 w-8 text-white" /> : <Mic className="h-8 w-8 text-white" />}
                 </button>
-                <span className="text-sm font-semibold text-[#5A8AAF]">
-                  {isRecording ? "Recording..." : "Hold to record"}
-                </span>
+                <span className="text-sm font-semibold text-[#5A8AAF]">{isRecording ? "Recording..." : "Hold to record"}</span>
               </div>
             </section>
 
-            {/* ── Fuel Check ── */}
+            {/* -- Fuel Check -- */}
             <section className="rounded-3xl bg-[#13263A] p-5">
               <div className="mb-2 flex items-center justify-between">
                 <h2 className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Fuel Level</h2>
                 <span className="text-sm font-bold text-[#FFD700]">{fuelLevel}%</span>
               </div>
               <Progress value={fuelLevel} className="mb-3 h-4 rounded-full" />
-              <p className="mb-3 text-sm text-[#8AA8C7]">Fuel is low? Complete a real-world task to recharge.</p>
+              <p className="mb-3 text-sm text-[#8AA8C7]">Fuel low? Complete a real-world task to recharge.</p>
               <Button onClick={() => setShowFuelModal(true)} className="w-full rounded-xl bg-[#D4872C] text-white hover:bg-[#B8711E]">
                 <Camera className="mr-2 h-4 w-4" /> Complete a Task (Photo Proof)
               </Button>
             </section>
 
-            {/* ── Today's Quest ── */}
+            {/* -- Today's Quest -- */}
             {journalUnlocked && (
               <section className="rounded-3xl bg-[#13263A] p-5">
                 <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">{"Today's Quest"}</h2>
                 <div className="mb-3 rounded-2xl bg-[#1A2D42] p-4">
                   <p className="mb-1 text-sm font-bold text-[#FFD700]">Riddle of the Day</p>
                   <p className="text-base leading-relaxed text-white">{"I have cities but no houses, forests but no trees, and water but no fish. What am I?"}</p>
-                  <p className="mt-2 text-xs text-[#5A8AAF]">Answer: A map! Now begin your quest on the map.</p>
+                  <p className="mt-2 text-xs text-[#5A8AAF]">Answer: A map! Now begin your quest.</p>
                 </div>
                 <Link href="/jungle" className="flex items-center justify-center gap-2 rounded-xl bg-[#2E8B57] px-4 py-3 font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]">
                   <MapPin className="h-5 w-5" /> Go to My Map
@@ -244,7 +283,25 @@ export default function HomePage() {
               </section>
             )}
 
-            {/* ── Roadblock Skills ── */}
+            {/* -- Movement & Exercise -- */}
+            <section className="rounded-3xl bg-[#13263A] p-5">
+              <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Movement & Exercise</h2>
+              <p className="mb-3 text-sm text-[#8AA8C7]">Outdoor walks earn chips. Indoor workouts are character-led.</p>
+              <Button onClick={() => setShowMovement(true)} className="w-full rounded-xl bg-[#FF6B35] text-white hover:bg-[#E05A28]">
+                <Dumbbell className="mr-2 h-4 w-4" /> Start Moving
+              </Button>
+            </section>
+
+            {/* -- Recipes & Fuel Cooking -- */}
+            <section className="rounded-3xl bg-[#13263A] p-5">
+              <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Fuel: Recipes</h2>
+              <p className="mb-3 text-sm text-[#8AA8C7]">Make your own recipes. Want to eat your hard work or try a meal kit?</p>
+              <Button onClick={() => setShowRecipes(true)} variant="outline" className="w-full rounded-xl border-[#2E8B57]/40 bg-transparent text-[#A8E6B0] hover:bg-[#2E8B57]/10">
+                <ChefHat className="mr-2 h-4 w-4" /> Browse Recipes
+              </Button>
+            </section>
+
+            {/* -- Roadblock Skills -- */}
             <section className="rounded-3xl bg-[#13263A] p-5">
               <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Roadblock Skills</h2>
               <div className="flex flex-col gap-2">
@@ -271,7 +328,7 @@ export default function HomePage() {
               </div>
             </section>
 
-            {/* ── Worry Box ── */}
+            {/* -- Worry Box -- */}
             <section className="rounded-3xl bg-[#13263A] p-5">
               <div className="mb-2 flex items-center justify-between">
                 <h2 className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Worry Box</h2>
@@ -283,7 +340,7 @@ export default function HomePage() {
               </Button>
             </section>
 
-            {/* ── Check-Ins ── */}
+            {/* -- Quick Check-Ins -- */}
             <section className="rounded-3xl bg-[#13263A] p-5">
               <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Quick Check-Ins</h2>
               <div className="grid grid-cols-3 gap-2">
@@ -302,7 +359,7 @@ export default function HomePage() {
               </div>
             </section>
 
-            {/* ── Scavenger Hunt ── */}
+            {/* -- Scavenger Hunt -- */}
             <section className="rounded-3xl bg-[#13263A] p-5">
               <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Scavenger Hunt</h2>
               <p className="mb-3 text-sm text-[#8AA8C7]">Look around you and find something matching the prompt.</p>
@@ -311,7 +368,7 @@ export default function HomePage() {
               </Button>
             </section>
 
-            {/* ── Meditation ── */}
+            {/* -- Meditation -- */}
             <section className="rounded-3xl bg-[#13263A] p-5">
               <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Meditation Break</h2>
               <p className="mb-3 text-sm text-[#8AA8C7]">Choose a character and take a guided breathing break.</p>
@@ -320,7 +377,7 @@ export default function HomePage() {
               </Button>
             </section>
 
-            {/* ── Milestone Check-In ── */}
+            {/* -- Milestone Check-In -- */}
             <section className="rounded-3xl bg-[#13263A] p-5">
               <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Milestone Check-In</h2>
               <p className="mb-3 text-sm text-[#8AA8C7]">Weekly and monthly reflections to stay on track.</p>
@@ -329,24 +386,28 @@ export default function HomePage() {
               </Button>
             </section>
 
-            {/* ── The Trigger Alert ── */}
+            {/* -- Reminders -- */}
+            <section className="rounded-3xl bg-[#13263A] p-5">
+              <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Reminders</h2>
+              <p className="mb-3 text-sm text-[#8AA8C7]">Stay on track with scheduled prompts and task reminders.</p>
+              <Button onClick={() => setShowReminders(true)} variant="outline" className="w-full rounded-xl border-[#FF9F43]/40 bg-transparent text-[#FF9F43] hover:bg-[#FF9F43]/10">
+                <Bell className="mr-2 h-4 w-4" /> View Reminders
+              </Button>
+            </section>
+
+            {/* -- The Trigger -- */}
             <section className="rounded-3xl bg-[#1A1014] p-5">
               <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-[#FF6B6B]">The Trigger</h2>
-              <p className="mb-3 text-sm text-[#CCA0A0]">
-                Tornado, earthquake, or storm approaching? Use your skills to face it.
-              </p>
+              <p className="mb-3 text-sm text-[#CCA0A0]">Tornado, earthquake, or storm approaching? Use your skills.</p>
               <Button onClick={() => setShowTrigger(true)} className="w-full rounded-xl bg-[#E84535] text-white hover:bg-[#C83525]">
                 <AlertTriangle className="mr-2 h-4 w-4" /> Face the Trigger
               </Button>
             </section>
 
-            {/* ── Current Adventure Link ── */}
+            {/* -- Current Adventure Link -- */}
             <section>
               <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Current Adventure</h2>
-              <Link
-                href={activeAdventure.href}
-                className={`group flex items-center gap-4 rounded-2xl bg-gradient-to-r ${activeAdventure.gradient} border ${activeAdventure.border} p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]`}
-              >
+              <Link href={activeAdventure.href} className={`group flex items-center gap-4 rounded-2xl bg-gradient-to-r ${activeAdventure.gradient} border ${activeAdventure.border} p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]`}>
                 <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${activeAdventure.iconBg}`}>
                   <LandscapeIcon id={activeAdventure.id} />
                 </div>
@@ -357,7 +418,7 @@ export default function HomePage() {
                     <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/30">
                       <div className="h-full rounded-full" style={{ width: "33%", backgroundColor: activeAdventure.accent }} />
                     </div>
-                    <span className="text-xs font-bold text-white/70">Step 2/6</span>
+                    <span className="text-xs font-bold text-white/70">Step 3/10</span>
                   </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-white/50" />
@@ -370,14 +431,12 @@ export default function HomePage() {
               <p className="mb-3 text-sm text-[#8AA8C7]">Pick a fun activity, schedule it, and take a photo when you do it.</p>
               <div className="grid grid-cols-2 gap-2">
                 {["Go for a walk", "Cook something fun", "Call a friend", "Read a book"].map((act) => (
-                  <button key={act} className="rounded-xl bg-[#1A2D42] px-3 py-3 text-sm font-bold text-white transition-transform hover:scale-105 active:scale-95">
-                    {act}
-                  </button>
+                  <button key={act} className="rounded-xl bg-[#1A2D42] px-3 py-3 text-sm font-bold text-white transition-transform hover:scale-105 active:scale-95">{act}</button>
                 ))}
               </div>
             </section>
 
-            {/* Monthly: Find Your Ikigai */}
+            {/* Find Your Ikigai */}
             <section className="rounded-3xl bg-[#13263A] p-5">
               <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Find Your Ikigai</h2>
               <p className="mb-3 text-sm text-[#8AA8C7]">End-of-month exploration. Discover hobbies, readings, podcasts, and outdoor activities.</p>
@@ -389,7 +448,7 @@ export default function HomePage() {
             </section>
           </>
         ) : (
-          /* ── Adventures Grid ── */
+          /* -- Adventures Grid -- */
           <>
             <section className="text-center">
               <h1 className="text-2xl font-extrabold tracking-tight text-white text-balance">Choose Your Adventure</h1>
@@ -397,11 +456,7 @@ export default function HomePage() {
             </section>
             <section className="flex flex-col gap-3">
               {adventures.map((adv) => (
-                <Link
-                  key={adv.id}
-                  href={adv.href}
-                  className={`group flex items-center gap-4 rounded-2xl bg-gradient-to-r ${adv.gradient} border ${adv.border} p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]`}
-                >
+                <Link key={adv.id} href={adv.href} className={`group flex items-center gap-4 rounded-2xl bg-gradient-to-r ${adv.gradient} border ${adv.border} p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]`}>
                   <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${adv.iconBg}`}>
                     <LandscapeIcon id={adv.id} />
                   </div>
@@ -417,14 +472,14 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* ════ MODALS ════ */}
+      {/* ---- MODALS ---- */}
 
       {/* Fuel Task Modal */}
       <Dialog open={showFuelModal} onOpenChange={setShowFuelModal}>
         <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#2A3E55] bg-[#13263A] p-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-white">Refuel: Complete a Task</DialogTitle>
-            <DialogDescription className="text-sm text-[#8AA8C7]">Complete one of these real-world tasks and upload a photo as proof.</DialogDescription>
+            <DialogDescription className="text-sm text-[#8AA8C7]">Complete one of these tasks and upload a photo as proof.</DialogDescription>
           </DialogHeader>
           <div className="mt-3 flex flex-col gap-2">
             {dailyTasks.map((t) => (
@@ -442,14 +497,9 @@ export default function HomePage() {
         <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#2A3E55] bg-[#13263A] p-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-white">Worry Box</DialogTitle>
-            <DialogDescription className="text-sm text-[#8AA8C7]">Write it down and lock it away. You and your therapist will open it together.</DialogDescription>
+            <DialogDescription className="text-sm text-[#8AA8C7]">Write it down and lock it away. Open it with your therapist.</DialogDescription>
           </DialogHeader>
-          <textarea
-            value={worryText}
-            onChange={(e) => setWorryText(e.target.value)}
-            placeholder="What is worrying you?"
-            className="mt-3 min-h-28 w-full rounded-xl border-0 bg-[#1A2D42] p-4 text-sm text-white placeholder:text-[#5A8AAF] focus:outline-none focus:ring-2 focus:ring-[#2E8B57]"
-          />
+          <textarea value={worryText} onChange={(e) => setWorryText(e.target.value)} placeholder="What is worrying you?" className="mt-3 min-h-28 w-full rounded-xl border-0 bg-[#1A2D42] p-4 text-sm text-white placeholder:text-[#5A8AAF] focus:outline-none focus:ring-2 focus:ring-[#2E8B57]" />
           <Button onClick={() => { setWorryText(""); setShowWorryBox(false) }} className="mt-3 w-full rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]">
             <Lock className="mr-2 h-4 w-4" /> Lock it Away
           </Button>
@@ -477,16 +527,13 @@ export default function HomePage() {
             </div>
           )}
           {showRoadblock?.id === "stretch" && (
-            <div className="mt-4 flex flex-col items-center gap-3">
-              <p className="text-sm text-[#8AA8C7]">Follow these stretches for 30 seconds each:</p>
-              <div className="flex flex-col gap-2 text-left">
-                {["Reach for the sky", "Touch your toes", "Twist left and right", "Roll your shoulders"].map((s, i) => (
-                  <div key={i} className="flex items-center gap-2 rounded-xl bg-[#1A2D42] p-3">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FF9F43]/20 text-xs font-bold text-[#FF9F43]">{i + 1}</span>
-                    <span className="text-sm text-white">{s}</span>
-                  </div>
-                ))}
-              </div>
+            <div className="mt-4 flex flex-col gap-2 text-left">
+              {["Reach for the sky", "Touch your toes", "Twist left and right", "Roll your shoulders"].map((s, i) => (
+                <div key={i} className="flex items-center gap-2 rounded-xl bg-[#1A2D42] p-3">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FF9F43]/20 text-xs font-bold text-[#FF9F43]">{i + 1}</span>
+                  <span className="text-sm text-white">{s}</span>
+                </div>
+              ))}
             </div>
           )}
           {showRoadblock?.id === "water" && (
@@ -508,19 +555,10 @@ export default function HomePage() {
             <DialogTitle className="text-xl font-bold text-white">Thought Sorter</DialogTitle>
             <DialogDescription className="text-sm text-[#8AA8C7]">Write a thought. Is it junk (trash it) or a gem (keep it)?</DialogDescription>
           </DialogHeader>
-          <textarea
-            value={thoughtText}
-            onChange={(e) => setThoughtText(e.target.value)}
-            placeholder="Write a thought..."
-            className="mt-3 min-h-20 w-full rounded-xl border-0 bg-[#1A2D42] p-4 text-sm text-white placeholder:text-[#5A8AAF] focus:outline-none focus:ring-2 focus:ring-[#9B59B6]"
-          />
+          <textarea value={thoughtText} onChange={(e) => setThoughtText(e.target.value)} placeholder="Write a thought..." className="mt-3 min-h-20 w-full rounded-xl border-0 bg-[#1A2D42] p-4 text-sm text-white placeholder:text-[#5A8AAF] focus:outline-none focus:ring-2 focus:ring-[#9B59B6]" />
           <div className="mt-3 flex gap-3">
-            <Button onClick={() => { setThoughtText(""); }} variant="outline" className="flex-1 rounded-xl border-[#E84535]/40 text-[#E84535] hover:bg-[#E84535]/10">
-              <Trash2 className="mr-2 h-4 w-4" /> Trash It
-            </Button>
-            <Button onClick={() => { setThoughtText(""); }} className="flex-1 rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]">
-              <Gem className="mr-2 h-4 w-4" /> Keep It
-            </Button>
+            <Button onClick={() => setThoughtText("")} variant="outline" className="flex-1 rounded-xl border-[#E84535]/40 text-[#E84535] hover:bg-[#E84535]/10"><Trash2 className="mr-2 h-4 w-4" /> Trash It</Button>
+            <Button onClick={() => setThoughtText("")} className="flex-1 rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]"><Gem className="mr-2 h-4 w-4" /> Keep It</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -529,15 +567,11 @@ export default function HomePage() {
       <Dialog open={showScavengerHunt} onOpenChange={setShowScavengerHunt}>
         <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#2A3E55] bg-[#13263A] p-6 text-center">
           <DialogHeader className="flex flex-col items-center gap-3">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1E90FF]/20">
-              <Search className="h-8 w-8 text-[#1E90FF]" />
-            </div>
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1E90FF]/20"><Search className="h-8 w-8 text-[#1E90FF]" /></div>
             <DialogTitle className="text-xl font-bold text-white">Scavenger Hunt</DialogTitle>
             <DialogDescription className="text-sm text-[#8AA8C7]">Find something BLUE around you and take a photo!</DialogDescription>
           </DialogHeader>
-          <Button className="mt-4 w-full rounded-xl bg-[#1E90FF] text-white hover:bg-[#1878D6]">
-            <Camera className="mr-2 h-4 w-4" /> Upload Photo
-          </Button>
+          <Button className="mt-4 w-full rounded-xl bg-[#1E90FF] text-white hover:bg-[#1878D6]"><Camera className="mr-2 h-4 w-4" /> Upload Photo</Button>
         </DialogContent>
       </Dialog>
 
@@ -548,27 +582,17 @@ export default function HomePage() {
             <DialogTitle className="text-xl font-bold text-white">Meditation Break</DialogTitle>
             <DialogDescription className="text-sm text-[#8AA8C7]">Who do you want to meditate with?</DialogDescription>
           </DialogHeader>
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="mt-3 grid grid-cols-3 gap-2">
             {meditationCharacters.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setSelectedMedChar(c.id)}
-                className={`flex flex-col items-center gap-2 rounded-2xl p-4 transition-all ${selectedMedChar === c.id ? "scale-105 ring-2" : "hover:scale-105"}`}
-                style={{
-                  backgroundColor: selectedMedChar === c.id ? `${c.color}22` : "#1A2D42",
-                  borderColor: selectedMedChar === c.id ? c.color : "transparent",
-                }}
-              >
+              <button key={c.id} onClick={() => setSelectedMedChar(c.id)} className={`flex flex-col items-center gap-2 rounded-2xl p-3 transition-all ${selectedMedChar === c.id ? "scale-105 ring-2" : "hover:scale-105"}`} style={{ backgroundColor: selectedMedChar === c.id ? `${c.color}22` : "#1A2D42", borderColor: selectedMedChar === c.id ? c.color : "transparent" }}>
                 <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ backgroundColor: `${c.color}33` }}>
                   <Sparkles className="h-5 w-5" style={{ color: c.color }} />
                 </div>
-                <span className="text-xs font-bold text-white">{c.label}</span>
+                <span className="text-[10px] font-bold text-white">{c.label}</span>
               </button>
             ))}
           </div>
-          <Button className="mt-4 w-full rounded-xl bg-[#DDA0DD] text-[#1A1014] hover:bg-[#CC8FCC]">
-            <Wind className="mr-2 h-4 w-4" /> Begin Breathing Exercise
-          </Button>
+          <Button className="mt-4 w-full rounded-xl bg-[#DDA0DD] text-[#1A1014] hover:bg-[#CC8FCC]"><Wind className="mr-2 h-4 w-4" /> Begin Breathing</Button>
         </DialogContent>
       </Dialog>
 
@@ -577,7 +601,7 @@ export default function HomePage() {
         <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#2A3E55] bg-[#13263A] p-6">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-white">Milestone Check-In</DialogTitle>
-            <DialogDescription className="text-sm text-[#8AA8C7]">Reflect on your progress this week.</DialogDescription>
+            <DialogDescription className="text-sm text-[#8AA8C7]">Reflect on your progress.</DialogDescription>
           </DialogHeader>
           <div className="mt-3 flex flex-col gap-3">
             <div className="rounded-xl bg-[#1A2D42] p-4">
@@ -588,9 +612,7 @@ export default function HomePage() {
               <p className="text-sm font-bold text-[#FFD700]">End of Month</p>
               <p className="mt-1 text-sm text-[#8AA8C7]">Find your ikigai: hobbies, readings, podcasts, outdoors.</p>
             </div>
-            <Button className="w-full rounded-xl bg-[#FFD700] text-[#1A1014] hover:bg-[#E8C400]">
-              <CalendarCheck className="mr-2 h-4 w-4" /> Set Reminders
-            </Button>
+            <Button className="w-full rounded-xl bg-[#FFD700] text-[#1A1014] hover:bg-[#E8C400]"><CalendarCheck className="mr-2 h-4 w-4" /> Set Reminders</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -599,17 +621,171 @@ export default function HomePage() {
       <Dialog open={showTrigger} onOpenChange={setShowTrigger}>
         <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#4A1A1A] bg-[#1A1014] p-6 text-center">
           <DialogHeader className="flex flex-col items-center gap-3">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#E84535]/20">
-              <AlertTriangle className="h-8 w-8 text-[#E84535]" />
-            </div>
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#E84535]/20"><AlertTriangle className="h-8 w-8 text-[#E84535]" /></div>
             <DialogTitle className="text-xl font-bold text-white">The Trigger</DialogTitle>
             <DialogDescription className="text-sm text-[#CCA0A0]">A storm is approaching. Use your skills to stay grounded.</DialogDescription>
           </DialogHeader>
           <div className="mt-4 flex flex-col gap-2">
             {["Deep Breathing", "Call a Safe Person", "Ground Yourself (5-4-3-2-1)", "Move Your Body"].map((skill) => (
-              <button key={skill} className="rounded-xl bg-[#2A1A1A] p-3 text-sm font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]">
-                {skill}
+              <button key={skill} className="rounded-xl bg-[#2A1A1A] p-3 text-sm font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]">{skill}</button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Leaderboard Modal */}
+      <Dialog open={showLeaderboard} onOpenChange={setShowLeaderboard}>
+        <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#2A3E55] bg-[#13263A] p-6">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold text-white"><Trophy className="h-5 w-5 text-[#FFD700]" /> Leaderboard</DialogTitle>
+            <DialogDescription className="text-sm text-[#8AA8C7]">Ranked by coins earned across all quests.</DialogDescription>
+          </DialogHeader>
+          <div className="mt-3 flex flex-col gap-2">
+            {[...leaderboard].sort((a, b) => a.rank - b.rank).map((p, i) => (
+              <div key={p.name} className={`flex items-center gap-3 rounded-2xl p-3 ${p.name === "You" ? "bg-[#2E8B57]/20 ring-1 ring-[#2E8B57]/40" : "bg-[#1A2D42]"}`}>
+                <span className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${i === 0 ? "bg-[#FFD700]/20 text-[#FFD700]" : i === 1 ? "bg-[#C0C0C0]/20 text-[#C0C0C0]" : i === 2 ? "bg-[#CD7F32]/20 text-[#CD7F32]" : "bg-[#1A2D42] text-[#5A8AAF]"}`}>
+                  {p.rank}
+                </span>
+                <span className={`flex-1 text-sm font-bold ${p.name === "You" ? "text-[#A8E6B0]" : "text-white"}`}>{p.name}</span>
+                <div className="flex items-center gap-1">
+                  <Coins className="h-4 w-4 text-[#FFD700]" />
+                  <span className="text-sm font-bold text-[#FFD700]">{p.coins}</span>
+                </div>
+                {p.name !== "You" && (
+                  <button className="rounded-full bg-[#2E8B57]/20 px-2.5 py-1 text-[10px] font-bold text-[#A8E6B0] transition-colors hover:bg-[#2E8B57]/30">
+                    <MessageCircle className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="mt-3">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Quick Cheer</p>
+            <div className="flex flex-wrap gap-1.5">
+              {quickMessages.map((m) => (
+                <button key={m} className="rounded-full bg-[#1A2D42] px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#2E8B57]/20">{m}</button>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Movement & Exercise Modal */}
+      <Dialog open={showMovement} onOpenChange={setShowMovement}>
+        <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#2A3E55] bg-[#13263A] p-6">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold text-white"><Dumbbell className="h-5 w-5 text-[#FF6B35]" /> Movement</DialogTitle>
+            <DialogDescription className="text-sm text-[#8AA8C7]">Outdoor walks earn collectible chips. Indoor workouts are character-led.</DialogDescription>
+          </DialogHeader>
+          <div className="mt-3">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[#FF6B35]">Outdoor</p>
+            <div className="flex flex-col gap-2">
+              {outdoorActivities.map((a) => (
+                <button key={a.label} className="flex items-center gap-3 rounded-2xl bg-[#1A2D42] p-4 text-left transition-transform hover:scale-[1.01]">
+                  <a.icon className="h-6 w-6 text-[#FF6B35]" />
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-white">{a.label}</p>
+                    <p className="text-xs text-[#8AA8C7]">{a.desc}</p>
+                  </div>
+                  <span className="rounded-full bg-[#FF6B35]/15 px-2 py-0.5 text-[10px] font-bold text-[#FF6B35]">{a.reward}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[#DDA0DD]">Indoor (Character-Led)</p>
+            <div className="flex flex-col gap-2">
+              {indoorWorkouts.map((w) => (
+                <button key={w.label} className="flex items-center gap-3 rounded-2xl bg-[#1A2D42] p-4 text-left transition-transform hover:scale-[1.01]">
+                  <PersonStanding className="h-6 w-6 text-[#DDA0DD]" />
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-white">{w.label}</p>
+                    <p className="text-xs text-[#8AA8C7]">{w.desc}</p>
+                  </div>
+                  <span className="rounded-full bg-[#DDA0DD]/15 px-2 py-0.5 text-[10px] font-bold text-[#DDA0DD]">{w.char}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Recipes Modal */}
+      <Dialog open={showRecipes} onOpenChange={setShowRecipes}>
+        <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#2A3E55] bg-[#13263A] p-6">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold text-white"><ChefHat className="h-5 w-5 text-[#2E8B57]" /> Fuel: Recipes</DialogTitle>
+            <DialogDescription className="text-sm text-[#8AA8C7]">Cook a recipe and upload a photo to fuel up. Try meal kits too!</DialogDescription>
+          </DialogHeader>
+          <div className="mt-3 flex flex-col gap-2">
+            {recipes.map((r) => (
+              <button key={r.id} className="flex items-start gap-3 rounded-2xl bg-[#1A2D42] p-4 text-left transition-transform hover:scale-[1.01]">
+                <ChefHat className="mt-0.5 h-5 w-5 shrink-0 text-[#2E8B57]" />
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-white">{r.name}</p>
+                  <p className="text-xs text-[#8AA8C7]">{r.desc}</p>
+                </div>
+                <span className="rounded-full bg-[#2E8B57]/15 px-2 py-0.5 text-[10px] font-bold text-[#A8E6B0]">{r.difficulty}</span>
               </button>
+            ))}
+          </div>
+          <Button className="mt-3 w-full rounded-xl bg-[#D4872C] text-white hover:bg-[#B8711E]"><Camera className="mr-2 h-4 w-4" /> Upload Meal Photo</Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Friend Connection Modal */}
+      <Dialog open={showFriendConnect} onOpenChange={setShowFriendConnect}>
+        <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#2A3E55] bg-[#13263A] p-6">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold text-white"><Users className="h-5 w-5 text-[#2E8B57]" /> Friend Connection</DialogTitle>
+            <DialogDescription className="text-sm text-[#8AA8C7]">Send encouragement to fellow adventurers on the leaderboard.</DialogDescription>
+          </DialogHeader>
+          <div className="mt-3 flex flex-col gap-2">
+            {leaderboard.filter((p) => p.name !== "You").map((p) => (
+              <div key={p.name} className="flex items-center gap-3 rounded-2xl bg-[#1A2D42] p-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2E8B57]/20 text-xs font-bold text-[#A8E6B0]">{p.name.charAt(0)}</div>
+                <span className="flex-1 text-sm font-bold text-white">{p.name}</span>
+                <span className="text-xs text-[#5A8AAF]">#{p.rank}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Quick Emotes</p>
+            <div className="flex flex-wrap gap-1.5">
+              {quickMessages.map((m) => (
+                <button key={m} className="rounded-full bg-[#1A2D42] px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#2E8B57]/20">{m}</button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-3 flex gap-2">
+            <input value={friendMsg} onChange={(e) => setFriendMsg(e.target.value)} placeholder="Write a message..." className="flex-1 rounded-xl border-0 bg-[#1A2D42] px-4 py-2.5 text-sm text-white placeholder:text-[#5A8AAF] focus:outline-none focus:ring-2 focus:ring-[#2E8B57]" />
+            <Button onClick={() => setFriendMsg("")} className="rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]"><Send className="h-4 w-4" /></Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reminders Modal */}
+      <Dialog open={showReminders} onOpenChange={setShowReminders}>
+        <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#2A3E55] bg-[#13263A] p-6">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold text-white"><Bell className="h-5 w-5 text-[#FF9F43]" /> Reminders</DialogTitle>
+            <DialogDescription className="text-sm text-[#8AA8C7]">Scheduled prompts to keep you on track.</DialogDescription>
+          </DialogHeader>
+          <div className="mt-3 flex flex-col gap-2">
+            {[
+              { time: "9:00 AM", label: "Morning journal entry", active: true },
+              { time: "12:00 PM", label: "Have you completed your task of the day?", active: true },
+              { time: "3:00 PM", label: "Afternoon check-in: Water? Stretch?", active: true },
+              { time: "6:00 PM", label: "Did you schedule the joy?", active: false },
+              { time: "9:00 PM", label: "Evening reflection", active: true },
+              { time: "Sunday", label: "End of week: Set up weekly schedule?", active: true },
+              { time: "Month End", label: "Find your ikigai", active: true },
+            ].map((r, i) => (
+              <div key={i} className="flex items-center gap-3 rounded-xl bg-[#1A2D42] p-3">
+                <span className="w-16 text-xs font-bold text-[#FF9F43]">{r.time}</span>
+                <span className="flex-1 text-sm text-white">{r.label}</span>
+                <div className={`h-2.5 w-2.5 rounded-full ${r.active ? "bg-[#2E8B57]" : "bg-[#5A8AAF]"}`} />
+              </div>
             ))}
           </div>
         </DialogContent>
