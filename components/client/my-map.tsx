@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Camera } from "lucide-react"
+import Link from "next/link"
 import {
   Dialog,
   DialogContent,
@@ -68,18 +69,31 @@ export function MyMap() {
             />
           </svg>
 
-          {/* Fork in the Road - at the top */}
+          {/* Fork in the Road - Choose Your Adventure */}
           <div className="relative z-10 mb-8 mt-4 flex w-full flex-col items-center gap-3">
-            <span className="mb-1 text-sm font-bold tracking-wide text-[#2d6a5e]">CHOOSE YOUR PATH</span>
-            <div className="flex gap-4">
-              <button className="flex h-24 w-32 flex-col items-center justify-center gap-1 rounded-2xl bg-[#FFD93D] shadow-lg transition-transform hover:scale-105 active:scale-95">
-                <span className="text-3xl">🚙</span>
+            <span className="mb-1 text-sm font-bold tracking-wide text-[#2d6a5e]">CHOOSE YOUR ADVENTURE</span>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Link
+                href="/savannah"
+                className="flex h-24 w-28 flex-col items-center justify-center gap-1 rounded-2xl bg-[#FFD93D] shadow-lg transition-transform hover:scale-105 active:scale-95"
+              >
+                <span className="text-3xl">{"\u{1F992}"}</span>
                 <span className="text-sm font-bold text-[#5a4a00]">Savannah</span>
-              </button>
-              <button className="flex h-24 w-32 flex-col items-center justify-center gap-1 rounded-2xl bg-[#6BC5E8] shadow-lg transition-transform hover:scale-105 active:scale-95">
-                <span className="text-3xl">🌊</span>
+              </Link>
+              <Link
+                href="/ocean"
+                className="flex h-24 w-28 flex-col items-center justify-center gap-1 rounded-2xl bg-[#6BC5E8] shadow-lg transition-transform hover:scale-105 active:scale-95"
+              >
+                <span className="text-3xl">{"\u{1F422}"}</span>
                 <span className="text-sm font-bold text-[#1a4a5e]">Ocean</span>
-              </button>
+              </Link>
+              <Link
+                href="/jungle"
+                className="flex h-24 w-28 flex-col items-center justify-center gap-1 rounded-2xl bg-[#4ADE80] shadow-lg transition-transform hover:scale-105 active:scale-95"
+              >
+                <span className="text-3xl">{"\u{1F412}"}</span>
+                <span className="text-sm font-bold text-[#1a4a2a]">Jungle</span>
+              </Link>
             </div>
           </div>
 
