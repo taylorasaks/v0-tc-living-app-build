@@ -42,18 +42,18 @@ export interface AdventureTheme {
 
 /* -- Real-life task pools for mix-and-match across adventures -- */
 const questPool = [
-  { icon: "cart", title: "Make Your Bed", description: "Start your day with one completed task. Make your bed neatly." },
-  { icon: "cart", title: "Put 5 Items Back in Place", description: "Find 5 things out of place and return them where they belong." },
-  { icon: "health", title: "Go for a 5-Minute Walk", description: "Step outside and walk for at least 5 minutes. Fresh air helps." },
-  { icon: "cart", title: "Take Out the Trash", description: "Gather any trash around your space and take it out." },
-  { icon: "cart", title: "Do a Load of Laundry", description: "Wash, dry, or fold one load of laundry today." },
-  { icon: "health", title: "Sit Outside for 3 Minutes", description: "Go outside, sit down, and just breathe for 3 minutes." },
-  { icon: "bill", title: "Pay One Bill", description: "Choose one bill and pay it or set up a payment reminder." },
-  { icon: "cart", title: "Reply to One Important Message", description: "Check your messages and reply to one you have been putting off." },
-  { icon: "health", title: "Schedule an Appointment", description: "Call or book one appointment you have been avoiding." },
-  { icon: "cart", title: "Organize a Drawer", description: "Pick one drawer and organize it. Remove what you don not need." },
-  { icon: "cook", title: "Complete 2 Small Tasks Today", description: "Pick 2 quick tasks from your to-do list and finish them." },
-  { icon: "budget", title: "Break a Big Task into 3 Steps", description: "Take one overwhelming task and write out 3 small steps for it." },
+  { icon: "cart", title: "Make Your Bed", description: "Start your day with one completed task. Make your bed neatly.", reflection: "How did it feel to start your day with something already done?" },
+  { icon: "cart", title: "Put 5 Items Back in Place", description: "Find 5 things out of place and return them where they belong.", reflection: "Did tidying up your space change how you feel inside?" },
+  { icon: "health", title: "Go for a 5-Minute Walk", description: "Step outside and walk for at least 5 minutes. Fresh air helps.", reflection: "What did you notice outside that you usually miss?" },
+  { icon: "cart", title: "Take Out the Trash", description: "Gather any trash around your space and take it out.", reflection: "Is there anything else in your life you are ready to let go of?" },
+  { icon: "cart", title: "Do a Load of Laundry", description: "Wash, dry, or fold one load of laundry today.", reflection: "How does taking care of small things help you feel more in control?" },
+  { icon: "health", title: "Sit Outside for 3 Minutes", description: "Go outside, sit down, and just breathe for 3 minutes.", reflection: "What came to mind while you were sitting quietly?" },
+  { icon: "bill", title: "Pay One Bill", description: "Choose one bill and pay it or set up a payment reminder.", reflection: "How does handling one responsibility change your stress level?" },
+  { icon: "cart", title: "Reply to One Important Message", description: "Check your messages and reply to one you have been putting off.", reflection: "What was holding you back from replying, and how do you feel now?" },
+  { icon: "health", title: "Schedule an Appointment", description: "Call or book one appointment you have been avoiding.", reflection: "What made this appointment feel hard to schedule?" },
+  { icon: "cart", title: "Organize a Drawer", description: "Pick one drawer and organize it. Remove what you do not need.", reflection: "Does organizing your space help organize your thoughts too?" },
+  { icon: "cook", title: "Complete 2 Small Tasks Today", description: "Pick 2 quick tasks from your to-do list and finish them.", reflection: "Which task felt easier and which felt harder? Why?" },
+  { icon: "budget", title: "Break a Big Task into 3 Steps", description: "Take one overwhelming task and write out 3 small steps for it.", reflection: "Does the big task feel more manageable now that it is broken down?" },
 ]
 
 const roadblockPool = [
@@ -91,7 +91,7 @@ function buildAdventureSteps(themeName: string) {
   const trigger = pick(triggerPool, 1)[0]
 
   // Interleave: Q1, Q2, R1, Q3, Q4, R2, Q5, Trigger, Q6, R3, Q7, Q8, [R4?], Fork, Treasure
-  const steps: { id: number; num: number; label: string; icon: string; title: string; description: string; type: "task" | "roadblock" | "monster" | "trigger" | "thought" | "fork" | "reward" }[] = []
+  const steps: { id: number; num: number; label: string; icon: string; title: string; description: string; reflection?: string; type: "task" | "roadblock" | "monster" | "trigger" | "thought" | "fork" | "reward" }[] = []
   let id = 1
   let qIdx = 0
   let rIdx = 0
@@ -99,7 +99,7 @@ function buildAdventureSteps(themeName: string) {
 
   // Q1, Q2
   for (let i = 0; i < 2 && qIdx < quests.length; i++) {
-    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, type: "task" }); qIdx++
+    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, reflection: quests[qIdx].reflection, type: "task" }); qIdx++
   }
   // R1
   if (rIdx < roadblocks.length) {
@@ -108,7 +108,7 @@ function buildAdventureSteps(themeName: string) {
   }
   // Q3, Q4
   for (let i = 0; i < 2 && qIdx < quests.length; i++) {
-    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, type: "task" }); qIdx++
+    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, reflection: quests[qIdx].reflection, type: "task" }); qIdx++
   }
   // R2
   if (rIdx < roadblocks.length) {
@@ -117,13 +117,13 @@ function buildAdventureSteps(themeName: string) {
   }
   // Q5
   if (qIdx < quests.length) {
-    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, type: "task" }); qIdx++
+    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, reflection: quests[qIdx].reflection, type: "task" }); qIdx++
   }
   // Trigger event
   steps.push({ id: id++, num: 0, label: "Trigger", icon: trigger.icon, title: trigger.title, description: trigger.description, type: "trigger" })
   // Q6
   if (qIdx < quests.length) {
-    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, type: "task" }); qIdx++
+    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, reflection: quests[qIdx].reflection, type: "task" }); qIdx++
   }
   // R3
   if (rIdx < roadblocks.length) {
@@ -132,7 +132,7 @@ function buildAdventureSteps(themeName: string) {
   }
   // Q7, Q8
   for (let i = 0; i < 2 && qIdx < quests.length; i++) {
-    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, type: "task" }); qIdx++
+    qNum++; steps.push({ id: id++, num: qNum, label: `Quest #${qNum}`, icon: quests[qIdx].icon, title: quests[qIdx].title, description: quests[qIdx].description, reflection: quests[qIdx].reflection, type: "task" }); qIdx++
   }
   // R4 if applicable
   if (rIdx < roadblocks.length) {
