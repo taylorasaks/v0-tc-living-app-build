@@ -28,12 +28,12 @@ const xpCurrencies: Record<string, { name: string; icon: React.ReactNode; color:
   jungle:     { name: "Bananas",    icon: <span className="text-lg leading-none">{"🍌"}</span>, color: "#FFD700" },
   savannah:   { name: "Acorns",     icon: <span className="text-lg leading-none">{"🌰"}</span>, color: "#D4872C" },
   ocean:      { name: "Sea Shells", icon: <span className="text-lg leading-none">{"🐚"}</span>, color: "#1E90FF" },
-  desert:     { name: "Scarabs",    icon: <span className="text-lg leading-none">{"🪲"}</span>, color: "#E8A435" },
+  desert:     { name: "Scarabs",    icon: <svg viewBox="0 0 20 20" className="inline-block h-5 w-5"><ellipse cx="10" cy="11" rx="7" ry="6" fill="#E8A435"/><circle cx="10" cy="6" r="4" fill="#D4872C"/><path d="M6 5 Q4 2 2 3" stroke="#D4872C" strokeWidth="1.5" fill="none" strokeLinecap="round"/><path d="M14 5 Q16 2 18 3" stroke="#D4872C" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>, color: "#E8A435" },
   mountains:  { name: "Crystals",   icon: <span className="text-lg leading-none">{"💎"}</span>, color: "#7F9BAA" },
   antarctica: { name: "Snowflakes", icon: <span className="text-lg leading-none">{"❄️"}</span>, color: "#89CFF0" },
   volcano:    { name: "Embers",     icon: <span className="text-lg leading-none">{"🔥"}</span>, color: "#E84535" },
-  city:       { name: "Tokens",     icon: <span className="text-lg leading-none">{"🪙"}</span>, color: "#8080FF" },
-  atlantis:   { name: "Pearls",     icon: <span className="text-lg leading-none">{"🫧"}</span>, color: "#00CED1" },
+  city:       { name: "Tokens",     icon: <svg viewBox="0 0 20 20" className="inline-block h-5 w-5"><circle cx="10" cy="10" r="8" fill="#FFD700"/><circle cx="10" cy="10" r="6" fill="#FFC107"/><text x="10" y="14" textAnchor="middle" fontSize="10" fill="#8B6914" fontWeight="bold">T</text></svg>, color: "#8080FF" },
+  atlantis:   { name: "Pearls",     icon: <svg viewBox="0 0 20 20" className="inline-block h-5 w-5"><circle cx="10" cy="10" r="7" fill="#E8E8E8"/><circle cx="10" cy="10" r="5" fill="#F5F5F5"/><ellipse cx="8" cy="8" rx="2" ry="1.5" fill="white" opacity="0.8"/></svg>, color: "#00CED1" },
 }
 
 /* ------------------------------------------------------------------ */
@@ -228,10 +228,10 @@ const joyActivities = [
 
 /* -- Roadblock Skills (for Adventure tab) -- */
 const roadblockSkills = [
-  { id: "breathing", label: "Deep Breathing", emoji: "\uD83E\uDEA8", desc: "Blow away the boulder", instructions: "Close your eyes. Breathe in slowly for 4 seconds through your nose. Hold for 4 seconds. Breathe out slowly for 6 seconds through your mouth. Repeat 5 times. Imagine the boulder crumbling with each exhale." },
+  { id: "breathing", label: "Deep Breathing", emoji: "\uD83C\uDF2C\uFE0F", desc: "Blow away the boulder", instructions: "Close your eyes. Breathe in slowly for 4 seconds through your nose. Hold for 4 seconds. Breathe out slowly for 6 seconds through your mouth. Repeat 5 times. Imagine the boulder crumbling with each exhale." },
   { id: "stretch", label: "Stretch Break", emoji: "\uD83C\uDF3F", desc: "Stretch through the vines", instructions: "Stand up and reach both arms above your head. Hold for 10 seconds. Slowly bend to the left, hold 10 seconds, then to the right. Roll your shoulders forward 5 times, then backward 5 times. Touch your toes and hold for 15 seconds." },
   { id: "hydration", label: "Hydration Check", emoji: "\uD83D\uDCA7", desc: "Wash the boulder away", instructions: "Go get a full glass of water right now. Drink it slowly, taking small sips. Notice the temperature and the feeling as you hydrate. Set a reminder to drink another glass in 1 hour. Your body needs water to think clearly!" },
-  { id: "thought-sorter", label: "Thought Sorter", emoji: "\uD83D\uDDD1\uFE0F", desc: "Sort helpful vs unhelpful thoughts", instructions: "Write down the thought bothering you. Ask yourself: Is this thought based on facts or feelings? Would I say this to a friend? What is a more balanced way to think about this? Trash the unhelpful version and keep the balanced one." },
+  { id: "thought-sorter", label: "Thought Sorter", emoji: "\uD83E\uDDE0", desc: "Sort helpful vs unhelpful thoughts", instructions: "Write down the thought bothering you. Ask yourself: Is this thought based on facts or feelings? Would I say this to a friend? What is a more balanced way to think about this? Trash the unhelpful version and keep the balanced one." },
 ]
 
 /* -- Extra XP opportunities -- */
@@ -413,12 +413,10 @@ export default function HomePage() {
   const xp = 240
   const streak = 5
   const currency = xpCurrencies[activeAdventure] ?? xpCurrencies.jungle
-  const [greeting, setGreeting] = useState("Good Morning")
   const [question, setQuestion] = useState("")
 
   // Hydrate time-dependent values on client only to avoid SSR mismatch
   useEffect(() => {
-    setGreeting(getTimeGreeting().greeting)
     setQuestion(getTodayQuestion())
   }, [])
 
@@ -621,7 +619,7 @@ export default function HomePage() {
           <>
             {/* -- Greeting -- */}
             <section className="text-center">
-              <h1 className="text-3xl font-extrabold tracking-tight text-white text-balance">{greeting}, Explorer</h1>
+              <h1 className="text-3xl font-extrabold tracking-tight text-white text-balance">Welcome to Adventure Quest</h1>
               <p className="mt-1 text-base text-[#8AA8C7]">
                 {journalUnlocked ? "Journal unlocked. Your quest awaits." : "Unlock your quest with your voice."}
               </p>
