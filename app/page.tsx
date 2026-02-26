@@ -719,6 +719,48 @@ export default function HomePage() {
               )}
             </section>
 
+            {/* -- Worry Box -- */}
+            <section className="rounded-3xl bg-[#13263A] p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#D4872C]/15">
+                  <span className="text-2xl leading-none">{"\uD83D\uDCE6"}</span>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-base font-bold text-white">Worry Box</h2>
+                  <p className="text-sm text-[#8AA8C7]">Lock a worry away for your therapist</p>
+                </div>
+                <button
+                  onClick={() => setShowWorryBox(true)}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#2E8B57] transition-transform hover:scale-105 active:scale-95"
+                  style={{ boxShadow: "0 4px 16px rgba(46,139,87,0.35)" }}
+                  aria-label="Record a worry"
+                >
+                  <Mic className="h-5 w-5 text-white" />
+                </button>
+              </div>
+            </section>
+
+            {/* -- Solution Box -- */}
+            <section className="rounded-3xl bg-[#13263A] p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FFD700]/15">
+                  <span className="text-2xl leading-none">{"\uD83D\uDCA1"}</span>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-base font-bold text-white">Solution Box</h2>
+                  <p className="text-sm text-[#8AA8C7]">{"What's one small thing you can do about it?"}</p>
+                </div>
+                <button
+                  onClick={() => setShowSolutionBox(true)}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#4ECDC4] transition-transform hover:scale-105 active:scale-95"
+                  style={{ boxShadow: "0 4px 16px rgba(78,205,196,0.35)" }}
+                  aria-label="Record a solution"
+                >
+                  <Mic className="h-5 w-5 text-white" />
+                </button>
+              </div>
+            </section>
+
             {/* -- Scavenger Hunt (Optional XP) -- */}
             <section className="rounded-3xl bg-[#13263A] p-5">
               <div className="mb-2 flex items-center justify-between">
@@ -759,48 +801,6 @@ export default function HomePage() {
                     </button>
                   )
                 })}
-              </div>
-            </section>
-
-            {/* -- Worry Box -- */}
-            <section className="rounded-3xl bg-[#13263A] p-5">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#D4872C]/15">
-                  <span className="text-2xl leading-none">{"\uD83D\uDCE6"}</span>
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-base font-bold text-white">Worry Box</h2>
-                  <p className="text-sm text-[#8AA8C7]">Lock a worry away for your therapist</p>
-                </div>
-                <button
-                  onClick={() => setShowWorryBox(true)}
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#2E8B57] transition-transform hover:scale-105 active:scale-95"
-                  style={{ boxShadow: "0 4px 16px rgba(46,139,87,0.35)" }}
-                  aria-label="Record a worry"
-                >
-                  <Mic className="h-5 w-5 text-white" />
-                </button>
-              </div>
-            </section>
-
-            {/* -- Solution Box -- */}
-            <section className="rounded-3xl bg-[#13263A] p-5">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FFD700]/15">
-                  <span className="text-2xl leading-none">{"\uD83D\uDCA1"}</span>
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-base font-bold text-white">Solution Box</h2>
-                  <p className="text-sm text-[#8AA8C7]">{"What's one small thing you can do about it?"}</p>
-                </div>
-                <button
-                  onClick={() => setShowSolutionBox(true)}
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#4ECDC4] transition-transform hover:scale-105 active:scale-95"
-                  style={{ boxShadow: "0 4px 16px rgba(78,205,196,0.35)" }}
-                  aria-label="Record a solution"
-                >
-                  <Mic className="h-5 w-5 text-white" />
-                </button>
               </div>
             </section>
 
