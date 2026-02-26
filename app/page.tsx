@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import {
-  Flame, Mic, Pause, ChevronRight, MapPin,
+  Flame, Mic, ChevronRight, MapPin,
   Wind, Camera, Package, Lock,
   CalendarCheck, Sparkles, Heart, Brain,
   Trash2, Gem, Trophy, Users, Dumbbell, ChefHat, Bell,
@@ -340,7 +340,7 @@ export default function HomePage() {
   const [activeAdventure] = useState("jungle")
   const [showReflection, setShowReflection] = useState<{ title: string; message: string } | null>(null)
   const reflectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const recordTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
 
   /* -- 3-tab nav (Check-In / Adventure / Profile) -- */
   const [activeTab, setActiveTab] = useState<"checkin" | "journey" | "profile">("checkin")
@@ -464,6 +464,9 @@ export default function HomePage() {
     }, 50)
   }
 
+  const RECORD_MIN = 30
+  const RECORD_MAX = 60
+
   function finishRecording() {
     setIsRecording(false)
     setRecordSeconds(0)
@@ -478,31 +481,28 @@ export default function HomePage() {
     }
   }
 
+  function startRecording() {
+    if (journalUnlocked || isRecording) return
+    setRecordSeconds(0)
+    setIsRecording(true)
+  }
+
   useEffect(() => {
     if (isRecording) {
-      setRecordSeconds(0)
       recordIntervalRef.current = setInterval(() => {
         setRecordSeconds((s) => {
-          if (s >= 59) {
+          if (s >= RECORD_MAX - 1) {
             finishRecording()
             return 0
           }
           return s + 1
         })
       }, 1000)
-      // Minimum 2s hold to unlock
-      recordTimerRef.current = setTimeout(() => {}, 2000)
     } else {
       if (recordIntervalRef.current) { clearInterval(recordIntervalRef.current); recordIntervalRef.current = null }
-      if (recordTimerRef.current) clearTimeout(recordTimerRef.current)
-      // If held for at least 2s, finish
-      if (recordSeconds >= 2 && !journalUnlocked) {
-        finishRecording()
-      }
     }
     return () => {
       if (recordIntervalRef.current) clearInterval(recordIntervalRef.current)
-      if (recordTimerRef.current) clearTimeout(recordTimerRef.current)
     }
   }, [isRecording])
 
@@ -625,56 +625,110 @@ export default function HomePage() {
               </p>
             </section>
 
-            {/* -- Voice Journal Card (60s max) -- */}
+            {/* -- Voice Journal Card (30s min / 60s max) -- */}
             <section className="rounded-3xl bg-[#13263A] p-6">
               <div className="mb-1 flex items-center justify-between">
                 <button
-                  onClick={() => !journalUnlocked && setShowJournalPicker(true)}
+                  onClick={() => !journalUnlocked && !isRecording && setShowJournalPicker(true)}
                   className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF] transition-colors hover:text-[#8AA8C7]"
                 >
-                  {"Today's Journal"} {!journalUnlocked && <ChevronDown className="ml-1 inline h-3 w-3" />}
+                  {"Today's Journal"} {!journalUnlocked && !isRecording && <ChevronDown className="ml-1 inline h-3 w-3" />}
                 </button>
                 {journalUnlocked ? (
                   <span className="rounded-full bg-[#2E8B57]/20 px-3 py-1 text-xs font-bold text-[#A8E6B0]">Unlocked</span>
+                ) : isRecording ? (
+                  <span className="flex items-center gap-1 rounded-full bg-[#FF6B6B]/15 px-3 py-1 text-xs font-bold text-[#FF6B6B]">
+                    <span className="relative mr-1 flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF6B6B] opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-[#FF6B6B]" />
+                    </span>
+                    REC
+                  </span>
                 ) : (
                   <span className="flex items-center gap-1 rounded-full bg-[#1A2D42] px-3 py-1 text-xs font-bold text-[#5A8AAF]">
-                    <Timer className="h-3 w-3" /> 60s max
+                    <Timer className="h-3 w-3" /> 30s min / 60s max
                   </span>
                 )}
               </div>
               <button
-                onClick={() => !journalUnlocked && setShowJournalPicker(true)}
+                onClick={() => !journalUnlocked && !isRecording && setShowJournalPicker(true)}
                 className="mb-5 w-full text-left text-lg font-bold leading-relaxed text-white transition-colors hover:text-[#A8E6B0]"
               >
                 {selectedPrompt || question || "Tap to choose a journal prompt"}
               </button>
-              <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center gap-4">
+                {/* Mic button with circular progress ring */}
                 <div className="relative">
                   <button
-                    onMouseDown={() => !journalUnlocked && setIsRecording(true)} onMouseUp={() => setIsRecording(false)} onMouseLeave={() => setIsRecording(false)}
-                    onTouchStart={() => !journalUnlocked && setIsRecording(true)} onTouchEnd={() => setIsRecording(false)}
-                    disabled={journalUnlocked}
-                    className={`flex h-20 w-20 items-center justify-center rounded-full transition-all ${journalUnlocked ? "bg-[#2E8B57]/30 opacity-60" : isRecording ? "scale-110 bg-[#FF6B6B]" : "bg-[#2E8B57] hover:bg-[#24734A]"}`}
+                    onClick={() => !isRecording && startRecording()}
+                    disabled={journalUnlocked || isRecording}
+                    className={`flex h-20 w-20 items-center justify-center rounded-full transition-all ${journalUnlocked ? "bg-[#2E8B57]/30 opacity-60" : isRecording ? "scale-110 bg-[#FF6B6B]" : "bg-[#2E8B57] hover:bg-[#24734A] active:scale-95"}`}
                     style={{ boxShadow: isRecording ? "0 0 0 8px rgba(255,107,107,0.25), 0 0 24px rgba(255,107,107,0.3)" : "0 4px 20px rgba(46,139,87,0.35)" }}
-                    aria-label="Hold to record your voice journal"
+                    aria-label={isRecording ? "Recording in progress" : "Tap to start recording your voice journal"}
                   >
-                    {isRecording ? <Pause className="h-8 w-8 text-white" /> : <Mic className="h-8 w-8 text-white" />}
+                    {journalUnlocked ? <Check className="h-8 w-8 text-[#2E8B57]" /> : isRecording ? <Mic className="h-8 w-8 animate-pulse text-white" /> : <Mic className="h-8 w-8 text-white" />}
                   </button>
-                  {/* Circular timer ring */}
+                  {/* Dual-ring progress: grey track, green 0-30s, gold 30-60s */}
                   {isRecording && (
-                    <svg className="absolute -inset-2 h-24 w-24" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="46" fill="none" stroke="#FF6B6B" strokeWidth="3" strokeOpacity="0.2" />
-                      <circle cx="50" cy="50" r="46" fill="none" stroke="#FF6B6B" strokeWidth="3"
-                        strokeDasharray={`${(recordSeconds / 60) * 289} 289`}
-                        strokeLinecap="round" transform="rotate(-90 50 50)"
+                    <svg className="pointer-events-none absolute -inset-3 h-[104px] w-[104px]" viewBox="0 0 104 104">
+                      {/* Background track */}
+                      <circle cx="52" cy="52" r="48" fill="none" stroke="#2A3E55" strokeWidth="4" />
+                      {/* Green arc: fills from 0 to 30s (first half of min requirement) */}
+                      <circle cx="52" cy="52" r="48" fill="none"
+                        stroke={recordSeconds >= RECORD_MIN ? "#2E8B57" : "#FF6B6B"}
+                        strokeWidth="4"
+                        strokeDasharray={`${Math.min(recordSeconds / RECORD_MAX, 1) * 301.6} 301.6`}
+                        strokeLinecap="round" transform="rotate(-90 52 52)"
                         className="transition-all duration-1000"
                       />
+                      {/* 30s tick mark */}
+                      <line x1="52" y1="4" x2="52" y2="10" stroke="#5A8AAF" strokeWidth="2" strokeLinecap="round" transform="rotate(180 52 52)" opacity="0.6" />
                     </svg>
                   )}
                 </div>
-                <span className="text-sm font-semibold text-[#5A8AAF]">
-                  {journalUnlocked ? "Journal recorded" : isRecording ? `Recording... ${recordSeconds}s / 60s` : "Hold to record"}
-                </span>
+
+                {/* Timer text with progress bar */}
+                {isRecording ? (
+                  <div className="flex w-full flex-col items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold tabular-nums text-white">{recordSeconds}s</span>
+                      <span className="text-sm text-[#5A8AAF]">/ {RECORD_MAX}s</span>
+                    </div>
+                    {/* Horizontal progress bar */}
+                    <div className="relative h-2 w-full max-w-[240px] overflow-hidden rounded-full bg-[#1A2D42]">
+                      {/* 30s marker */}
+                      <div className="absolute top-0 h-full w-px bg-[#5A8AAF]" style={{ left: `${(RECORD_MIN / RECORD_MAX) * 100}%` }} />
+                      {/* Fill */}
+                      <div
+                        className="h-full rounded-full transition-all duration-1000"
+                        style={{
+                          width: `${(recordSeconds / RECORD_MAX) * 100}%`,
+                          backgroundColor: recordSeconds >= RECORD_MIN ? "#2E8B57" : "#FF6B6B",
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs text-[#5A8AAF]">
+                      {recordSeconds < RECORD_MIN
+                        ? `Keep going... ${RECORD_MIN - recordSeconds}s until you can finish`
+                        : "Minimum reached! Tap Done when ready."}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-sm font-semibold text-[#5A8AAF]">
+                    {journalUnlocked ? "Journal recorded" : "Tap to record"}
+                  </span>
+                )}
+
+                {/* Done button - visible only after 30s */}
+                {isRecording && recordSeconds >= RECORD_MIN && (
+                  <button
+                    onClick={() => finishRecording()}
+                    className="flex items-center gap-2 rounded-2xl bg-[#2E8B57] px-8 py-3 text-base font-bold text-white transition-all hover:bg-[#24734A] active:scale-95"
+                    style={{ boxShadow: "0 4px 20px rgba(46,139,87,0.4)" }}
+                  >
+                    <Check className="h-5 w-5" /> Done
+                  </button>
+                )}
               </div>
             </section>
 
