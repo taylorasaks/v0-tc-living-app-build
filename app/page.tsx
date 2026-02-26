@@ -466,11 +466,14 @@ export default function HomePage() {
 
   const RECORD_MIN = 30
   const RECORD_MAX = 60
+  const recordingFinishedRef = useRef(false)
 
   function finishRecording() {
+    if (recordingFinishedRef.current) return
+    recordingFinishedRef.current = true
+    if (recordIntervalRef.current) { clearInterval(recordIntervalRef.current); recordIntervalRef.current = null }
     setIsRecording(false)
     setRecordSeconds(0)
-    if (recordIntervalRef.current) { clearInterval(recordIntervalRef.current); recordIntervalRef.current = null }
     setJournalUnlocked(true)
     addToMyDay("Voice journal completed")
     triggerReflection()
@@ -483,26 +486,27 @@ export default function HomePage() {
 
   function startRecording() {
     if (journalUnlocked || isRecording) return
+    recordingFinishedRef.current = false
     setRecordSeconds(0)
     setIsRecording(true)
   }
 
   useEffect(() => {
-    if (isRecording) {
-      recordIntervalRef.current = setInterval(() => {
-        setRecordSeconds((s) => {
-          if (s >= RECORD_MAX - 1) {
-            finishRecording()
-            return 0
-          }
-          return s + 1
-        })
-      }, 1000)
-    } else {
+    if (!isRecording) {
       if (recordIntervalRef.current) { clearInterval(recordIntervalRef.current); recordIntervalRef.current = null }
+      return
     }
+    const startTime = Date.now()
+    recordIntervalRef.current = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000)
+      if (elapsed >= RECORD_MAX) {
+        finishRecording()
+        return
+      }
+      setRecordSeconds(elapsed)
+    }, 250)
     return () => {
-      if (recordIntervalRef.current) clearInterval(recordIntervalRef.current)
+      if (recordIntervalRef.current) { clearInterval(recordIntervalRef.current); recordIntervalRef.current = null }
     }
   }, [isRecording])
 
@@ -656,80 +660,106 @@ export default function HomePage() {
               >
                 {selectedPrompt || question || "Tap to choose a journal prompt"}
               </button>
-              <div className="flex flex-col items-center gap-4">
-                {/* Mic button with circular progress ring */}
-                <div className="relative">
-                  <button
-                    onClick={() => !isRecording && startRecording()}
-                    disabled={journalUnlocked || isRecording}
-                    className={`flex h-20 w-20 items-center justify-center rounded-full transition-all ${journalUnlocked ? "bg-[#2E8B57]/30 opacity-60" : isRecording ? "scale-110 bg-[#FF6B6B]" : "bg-[#2E8B57] hover:bg-[#24734A] active:scale-95"}`}
-                    style={{ boxShadow: isRecording ? "0 0 0 8px rgba(255,107,107,0.25), 0 0 24px rgba(255,107,107,0.3)" : "0 4px 20px rgba(46,139,87,0.35)" }}
-                    aria-label={isRecording ? "Recording in progress" : "Tap to start recording your voice journal"}
-                  >
-                    {journalUnlocked ? <Check className="h-8 w-8 text-[#2E8B57]" /> : isRecording ? <Mic className="h-8 w-8 animate-pulse text-white" /> : <Mic className="h-8 w-8 text-white" />}
-                  </button>
-                  {/* Dual-ring progress: grey track, green 0-30s, gold 30-60s */}
-                  {isRecording && (
-                    <svg className="pointer-events-none absolute -inset-3 h-[104px] w-[104px]" viewBox="0 0 104 104">
-                      {/* Background track */}
-                      <circle cx="52" cy="52" r="48" fill="none" stroke="#2A3E55" strokeWidth="4" />
-                      {/* Green arc: fills from 0 to 30s (first half of min requirement) */}
-                      <circle cx="52" cy="52" r="48" fill="none"
-                        stroke={recordSeconds >= RECORD_MIN ? "#2E8B57" : "#FF6B6B"}
-                        strokeWidth="4"
-                        strokeDasharray={`${Math.min(recordSeconds / RECORD_MAX, 1) * 301.6} 301.6`}
-                        strokeLinecap="round" transform="rotate(-90 52 52)"
-                        className="transition-all duration-1000"
-                      />
-                      {/* 30s tick mark */}
-                      <line x1="52" y1="4" x2="52" y2="10" stroke="#5A8AAF" strokeWidth="2" strokeLinecap="round" transform="rotate(180 52 52)" opacity="0.6" />
-                    </svg>
-                  )}
-                </div>
+              {(() => {
+                const pct = Math.min(recordSeconds / RECORD_MAX, 1)
+                const circumference = 2 * Math.PI * 48         // ~301.6
+                const reachedMin = recordSeconds >= RECORD_MIN
+                const ringColor = reachedMin ? "#2E8B57" : "#FF6B6B"
+                return (
+                  <div className="flex flex-col items-center gap-4">
+                    {/* Mic button with circular progress ring */}
+                    <div className="relative flex items-center justify-center" style={{ width: 108, height: 108 }}>
+                      {/* SVG ring -- always rendered so layout is stable */}
+                      <svg className="pointer-events-none absolute inset-0" width="108" height="108" viewBox="0 0 108 108">
+                        {/* track */}
+                        <circle cx="54" cy="54" r="48" fill="none" stroke={isRecording ? "#2A3E55" : "transparent"} strokeWidth="4" />
+                        {/* progress arc */}
+                        {isRecording && (
+                          <circle cx="54" cy="54" r="48" fill="none"
+                            stroke={ringColor}
+                            strokeWidth="4"
+                            strokeDasharray={`${pct * circumference} ${circumference}`}
+                            strokeLinecap="round"
+                            transform="rotate(-90 54 54)"
+                            style={{ transition: "stroke-dasharray 0.3s linear, stroke 0.3s ease" }}
+                          />
+                        )}
+                        {/* 30-s tick mark (halfway notch) */}
+                        {isRecording && (
+                          <line x1="54" y1="6" x2="54" y2="12"
+                            stroke="#5A8AAF" strokeWidth="2" strokeLinecap="round"
+                            transform="rotate(180 54 54)" opacity="0.5"
+                          />
+                        )}
+                      </svg>
 
-                {/* Timer text with progress bar */}
-                {isRecording ? (
-                  <div className="flex w-full flex-col items-center gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl font-bold tabular-nums text-white">{recordSeconds}s</span>
-                      <span className="text-sm text-[#5A8AAF]">/ {RECORD_MAX}s</span>
-                    </div>
-                    {/* Horizontal progress bar */}
-                    <div className="relative h-2 w-full max-w-[240px] overflow-hidden rounded-full bg-[#1A2D42]">
-                      {/* 30s marker */}
-                      <div className="absolute top-0 h-full w-px bg-[#5A8AAF]" style={{ left: `${(RECORD_MIN / RECORD_MAX) * 100}%` }} />
-                      {/* Fill */}
-                      <div
-                        className="h-full rounded-full transition-all duration-1000"
+                      <button
+                        onClick={() => { if (!isRecording && !journalUnlocked) startRecording() }}
+                        disabled={journalUnlocked || isRecording}
+                        className={`relative z-10 flex h-20 w-20 items-center justify-center rounded-full transition-all ${journalUnlocked ? "bg-[#2E8B57]/30 opacity-60" : isRecording ? "scale-105 bg-[#FF6B6B]" : "bg-[#2E8B57] hover:bg-[#24734A] active:scale-95"}`}
                         style={{
-                          width: `${(recordSeconds / RECORD_MAX) * 100}%`,
-                          backgroundColor: recordSeconds >= RECORD_MIN ? "#2E8B57" : "#FF6B6B",
+                          boxShadow: isRecording
+                            ? `0 0 0 6px ${ringColor}40, 0 0 20px ${ringColor}30`
+                            : "0 4px 20px rgba(46,139,87,0.35)",
                         }}
-                      />
+                        aria-label={isRecording ? "Recording in progress" : "Tap to start recording your voice journal"}
+                      >
+                        {journalUnlocked
+                          ? <Check className="h-8 w-8 text-[#2E8B57]" />
+                          : <Mic className={`h-8 w-8 text-white ${isRecording ? "animate-pulse" : ""}`} />}
+                      </button>
                     </div>
-                    <span className="text-xs text-[#5A8AAF]">
-                      {recordSeconds < RECORD_MIN
-                        ? `Keep going... ${RECORD_MIN - recordSeconds}s until you can finish`
-                        : "Minimum reached! Tap Done when ready."}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-sm font-semibold text-[#5A8AAF]">
-                    {journalUnlocked ? "Journal recorded" : "Tap to record"}
-                  </span>
-                )}
 
-                {/* Done button - visible only after 30s */}
-                {isRecording && recordSeconds >= RECORD_MIN && (
-                  <button
-                    onClick={() => finishRecording()}
-                    className="flex items-center gap-2 rounded-2xl bg-[#2E8B57] px-8 py-3 text-base font-bold text-white transition-all hover:bg-[#24734A] active:scale-95"
-                    style={{ boxShadow: "0 4px 20px rgba(46,139,87,0.4)" }}
-                  >
-                    <Check className="h-5 w-5" /> Done
-                  </button>
-                )}
-              </div>
+                    {/* Timer readout + horizontal bar */}
+                    {isRecording ? (
+                      <div className="flex w-full flex-col items-center gap-2">
+                        {/* Large elapsed counter */}
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-3xl font-extrabold tabular-nums text-white">{recordSeconds}</span>
+                          <span className="text-base font-semibold text-[#5A8AAF]">/ {RECORD_MAX}s</span>
+                        </div>
+
+                        {/* Horizontal progress bar */}
+                        <div className="relative h-2.5 w-full max-w-[260px] overflow-hidden rounded-full bg-[#1A2D42]">
+                          {/* 30-s marker line */}
+                          <div className="absolute top-0 z-10 h-full w-0.5 rounded-full bg-white/30" style={{ left: `${(RECORD_MIN / RECORD_MAX) * 100}%` }} />
+                          {/* fill */}
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${pct * 100}%`,
+                              backgroundColor: ringColor,
+                              transition: "width 0.3s linear, background-color 0.3s ease",
+                            }}
+                          />
+                        </div>
+
+                        {/* Contextual label */}
+                        <span className="text-sm font-medium" style={{ color: reachedMin ? "#A8E6B0" : "#8AA8C7" }}>
+                          {reachedMin
+                            ? "Minimum reached -- press Done whenever you're ready"
+                            : `${RECORD_MIN - recordSeconds}s left until you can finish`}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-sm font-semibold text-[#5A8AAF]">
+                        {journalUnlocked ? "Journal recorded" : "Tap to record"}
+                      </span>
+                    )}
+
+                    {/* Done button -- appears only after RECORD_MIN */}
+                    {isRecording && reachedMin && (
+                      <button
+                        onClick={() => finishRecording()}
+                        className="flex items-center gap-2 rounded-2xl bg-[#2E8B57] px-10 py-3.5 text-base font-bold text-white transition-all hover:bg-[#24734A] active:scale-95"
+                        style={{ boxShadow: "0 4px 20px rgba(46,139,87,0.45)" }}
+                      >
+                        <Check className="h-5 w-5" /> Done
+                      </button>
+                    )}
+                  </div>
+                )
+              })()}
             </section>
 
             {/* -- My Day (expandable auto-log of ALL completed tasks) -- */}
