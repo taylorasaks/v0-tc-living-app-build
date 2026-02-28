@@ -3,12 +3,7 @@ import fs from "node:fs"
 import path from "node:path"
 import { execFileSync } from "node:child_process"
 
-const dataDir = path.join(process.cwd(), "data")
-const dbPath = path.join(dataDir, "app.db")
-
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true })
-}
+const dbPath = "/tmp/app.db"
 
 let initialized = false
 
