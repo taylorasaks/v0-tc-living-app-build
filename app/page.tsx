@@ -189,6 +189,10 @@ function getMealSuggestions() {
   }
 }
 
+function getCurrentTimeLabel() {
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+}
+
 /* -- Roadblock exercises -- */
 const roadblocks = [
   { id: "breathe", label: "Time to Breathe", desc: "Blow away the boulder with deep breaths", icon: Wind, color: "#4ECDC4" },
@@ -379,9 +383,11 @@ export default function HomePage() {
   /* -- Solution Box (AI therapist chat) -- */
   const [showSolutionBox, setShowSolutionBox] = useState(false)
   const [solutionMessages, setSolutionMessages] = useState<{ role: "user" | "ai"; text: string; time: string }[]>([
-    { role: "ai", text: "Hi there. I am your Solution Guide. Tell me what is on your mind, and we will work through it together.", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) },
+    { role: "ai", text: "Hi there. I am your Solution Guide. Tell me what is on your mind, and we will work through it together.", time: "--:--" },
   ])
   const [solutionInput, setSolutionInput] = useState("")
+  const [dailyBoostStart, setDailyBoostStart] = useState(0)
+  const [mealSuggestionsData, setMealSuggestionsData] = useState(() => getMealSuggestions())
 
   /* -- Breathing countdown for roadblock -- */
   const [breathPhase, setBreathPhase] = useState<"idle" | "in" | "out" | "done">("idle")
@@ -418,6 +424,13 @@ export default function HomePage() {
   // Hydrate time-dependent values on client only to avoid SSR mismatch
   useEffect(() => {
     setQuestion(getTodayQuestion())
+    setDailyBoostStart(new Date().getDate() % 7)
+    setMealSuggestionsData(getMealSuggestions())
+    setSolutionMessages((prev) => prev.map((message, index) => (
+      index === 0 && message.time === "--:--"
+        ? { ...message, time: getCurrentTimeLabel() }
+        : message
+    )))
   }, [])
 
   /* -- Journal prompt picker -- */
@@ -435,8 +448,7 @@ export default function HomePage() {
   const [selectedPrompt, setSelectedPrompt] = useState("")
 
   function addToMyDay(label: string) {
-    const now = new Date()
-    const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    const time = getCurrentTimeLabel()
     setMyDayLog((prev) => [...prev, { time, label }])
   }
 
@@ -523,7 +535,7 @@ export default function HomePage() {
 
   function sendSolutionMessage() {
     if (!solutionInput.trim()) return
-    const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    const now = getCurrentTimeLabel()
     const userMsg = { role: "user" as const, text: solutionInput.trim(), time: now }
     setSolutionMessages((prev) => [...prev, userMsg])
     setSolutionInput("")
@@ -531,7 +543,7 @@ export default function HomePage() {
     // Simulate AI reply after short delay
     setTimeout(() => {
       const reply = aiReplies[Math.floor(Math.random() * aiReplies.length)]
-      const aiTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      const aiTime = getCurrentTimeLabel()
       setSolutionMessages((prev) => [...prev, { role: "ai", text: reply, time: aiTime }])
     }, 1200)
   }
@@ -921,7 +933,7 @@ export default function HomePage() {
               </div>
               <p className="mb-3 text-sm text-[#8AA8C7]">Tap a boost for a quick XP activity. 5 boosts available today.</p>
               <div className="grid grid-cols-3 gap-2">
-                {boostCategories.slice(new Date().getDate() % 7, (new Date().getDate() % 7) + 5).map((boost) => {
+                {boostCategories.slice(dailyBoostStart, dailyBoostStart + 5).map((boost) => {
                   const done = completedBoosts.includes(boost.id)
                   return (
                     <button
@@ -1416,7 +1428,7 @@ export default function HomePage() {
             </>
           )}
           {fuelStep === "not-yet" && (() => {
-            const { mealTime, suggestions } = getMealSuggestions()
+            const { mealTime, suggestions } = mealSuggestionsData
             return (
               <>
                 <DialogHeader>
