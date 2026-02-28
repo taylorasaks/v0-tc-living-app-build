@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import {
-  Flame, Mic, Pause, ChevronRight, MapPin,
+  Flame, Mic, ChevronRight, MapPin,
   Wind, Camera, Package, Lock,
   CalendarCheck, Sparkles, Heart, Brain,
   Trash2, Gem, Trophy, Users, Dumbbell, ChefHat, Bell,
@@ -12,7 +12,7 @@ import {
   UtensilsCrossed, Clock, Check, ArrowLeft, Phone, Pencil,
   Puzzle, Eye, Gamepad2, Megaphone, User, Leaf, Salad,
   CircleAlert, ListChecks, Search, Bot, ChevronDown,
-  ChevronUp, Timer
+  ChevronUp, Timer, Compass, Lightbulb, Droplets, X
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -28,12 +28,12 @@ const xpCurrencies: Record<string, { name: string; icon: React.ReactNode; color:
   jungle:     { name: "Bananas",    icon: <span className="text-lg leading-none">{"🍌"}</span>, color: "#FFD700" },
   savannah:   { name: "Acorns",     icon: <span className="text-lg leading-none">{"🌰"}</span>, color: "#D4872C" },
   ocean:      { name: "Sea Shells", icon: <span className="text-lg leading-none">{"🐚"}</span>, color: "#1E90FF" },
-  desert:     { name: "Scarabs",    icon: <span className="text-lg leading-none">{"🪲"}</span>, color: "#E8A435" },
+  desert:     { name: "Scarabs",    icon: <svg viewBox="0 0 20 20" className="inline-block h-5 w-5"><ellipse cx="10" cy="11" rx="7" ry="6" fill="#E8A435"/><circle cx="10" cy="6" r="4" fill="#D4872C"/><path d="M6 5 Q4 2 2 3" stroke="#D4872C" strokeWidth="1.5" fill="none" strokeLinecap="round"/><path d="M14 5 Q16 2 18 3" stroke="#D4872C" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>, color: "#E8A435" },
   mountains:  { name: "Crystals",   icon: <span className="text-lg leading-none">{"💎"}</span>, color: "#7F9BAA" },
   antarctica: { name: "Snowflakes", icon: <span className="text-lg leading-none">{"❄️"}</span>, color: "#89CFF0" },
   volcano:    { name: "Embers",     icon: <span className="text-lg leading-none">{"🔥"}</span>, color: "#E84535" },
-  city:       { name: "Tokens",     icon: <span className="text-lg leading-none">{"🪙"}</span>, color: "#8080FF" },
-  atlantis:   { name: "Pearls",     icon: <span className="text-lg leading-none">{"🫧"}</span>, color: "#00CED1" },
+  city:       { name: "Tokens",     icon: <svg viewBox="0 0 20 20" className="inline-block h-5 w-5"><circle cx="10" cy="10" r="8" fill="#FFD700"/><circle cx="10" cy="10" r="6" fill="#FFC107"/><text x="10" y="14" textAnchor="middle" fontSize="10" fill="#8B6914" fontWeight="bold">T</text></svg>, color: "#8080FF" },
+  atlantis:   { name: "Pearls",     icon: <svg viewBox="0 0 20 20" className="inline-block h-5 w-5"><circle cx="10" cy="10" r="7" fill="#E8E8E8"/><circle cx="10" cy="10" r="5" fill="#F5F5F5"/><ellipse cx="8" cy="8" rx="2" ry="1.5" fill="white" opacity="0.8"/></svg>, color: "#00CED1" },
 }
 
 /* ------------------------------------------------------------------ */
@@ -218,6 +218,22 @@ const leaderboard = [
 /* -- Premade emotes/messages -- */
 const quickMessages = ["Way to go!", "Keep it up!", "You inspire me!", "Almost there!", "Stay strong!"]
 
+/* -- Joy activities with emoji -- */
+const joyActivities = [
+  { label: "Go for a walk", emoji: "\uD83D\uDEB6" },
+  { label: "Cook something fun", emoji: "\uD83C\uDF73" },
+  { label: "Call a friend", emoji: "\uD83D\uDCDE" },
+  { label: "Read a book", emoji: "\uD83D\uDCDA" },
+]
+
+/* -- Roadblock Skills (for Adventure tab) -- */
+const roadblockSkills = [
+  { id: "breathing", label: "Deep Breathing", emoji: "\uD83C\uDF2C\uFE0F", desc: "Blow away the boulder", instructions: "Close your eyes. Breathe in slowly for 4 seconds through your nose. Hold for 4 seconds. Breathe out slowly for 6 seconds through your mouth. Repeat 5 times. Imagine the boulder crumbling with each exhale." },
+  { id: "stretch", label: "Stretch Break", emoji: "\uD83C\uDF3F", desc: "Stretch through the vines", instructions: "Stand up and reach both arms above your head. Hold for 10 seconds. Slowly bend to the left, hold 10 seconds, then to the right. Roll your shoulders forward 5 times, then backward 5 times. Touch your toes and hold for 15 seconds." },
+  { id: "hydration", label: "Hydration Check", emoji: "\uD83D\uDCA7", desc: "Wash the boulder away", instructions: "Go get a full glass of water right now. Drink it slowly, taking small sips. Notice the temperature and the feeling as you hydrate. Set a reminder to drink another glass in 1 hour. Your body needs water to think clearly!" },
+  { id: "thought-sorter", label: "Thought Sorter", emoji: "\uD83E\uDDE0", desc: "Sort helpful vs unhelpful thoughts", instructions: "Write down the thought bothering you. Ask yourself: Is this thought based on facts or feelings? Would I say this to a friend? What is a more balanced way to think about this? Trash the unhelpful version and keep the balanced one." },
+]
+
 /* -- Extra XP opportunities -- */
 const extraXpItems = [
   { id: "journal", label: "Journal Entry", desc: "+10 XP per entry", xp: 10, icon: PenLine, color: "#2E8B57" },
@@ -311,27 +327,40 @@ export default function HomePage() {
   const [showWorryBox, setShowWorryBox] = useState(false)
   const [showRoadblock, setShowRoadblock] = useState<typeof roadblocks[0] | null>(null)
   const [showThoughtSorter, setShowThoughtSorter] = useState(false)
-  const [showMeditation, setShowMeditation] = useState(false)
   const [showMilestone, setShowMilestone] = useState(false)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [showMovement, setShowMovement] = useState(false)
   const [showRecipes, setShowRecipes] = useState(false)
   const [showReminders, setShowReminders] = useState(false)
-  const [completedXp, setCompletedXp] = useState<string[]>([])
   const [showBoostModal, setShowBoostModal] = useState<typeof boostCategories[0] | null>(null)
   const [completedBoosts, setCompletedBoosts] = useState<string[]>([])
-  const [selectedMedChar, setSelectedMedChar] = useState(meditationCharacters[0].id)
   const [worryText, setWorryText] = useState("")
   const [thoughtText, setThoughtText] = useState("")
   // section state replaced by activeTab below
-  const [friendMsg, setFriendMsg] = useState("")
   const [activeAdventure] = useState("jungle")
   const [showReflection, setShowReflection] = useState<{ title: string; message: string } | null>(null)
   const reflectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const recordTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  /* -- 3-tab nav (Check-In / Journey / Profile) -- */
+
+  /* -- 3-tab nav (Check-In / Adventure / Profile) -- */
   const [activeTab, setActiveTab] = useState<"checkin" | "journey" | "profile">("checkin")
+
+  /* -- Schedule the Joy state -- */
+  const [showJoyCalendar, setShowJoyCalendar] = useState(false)
+  const [joyActivity, setJoyActivity] = useState("")
+  const [joyDate, setJoyDate] = useState("")
+  const [joyTime, setJoyTime] = useState("")
+  const [scheduledJoys, setScheduledJoys] = useState<{ activity: string; emoji: string; date: string; time: string }[]>([])
+
+  /* -- Leaderboard encouragement state -- */
+  const [showEncouragement, setShowEncouragement] = useState<string | null>(null)
+  const [encourageMsg, setEncourageMsg] = useState("")
+
+  /* -- Roadblock Skills modal (Adventure tab) -- */
+  const [showRoadblockSkill, setShowRoadblockSkill] = useState<{ id: string; label: string; emoji: string; desc: string; instructions: string } | null>(null)
+
+  /* -- Landscape dropdown -- */
+  const [showLandscapeDropdown, setShowLandscapeDropdown] = useState(false)
 
   /* -- My Day auto-log -- */
   const [myDayLog, setMyDayLog] = useState<{ time: string; label: string }[]>([])
@@ -384,12 +413,10 @@ export default function HomePage() {
   const xp = 240
   const streak = 5
   const currency = xpCurrencies[activeAdventure] ?? xpCurrencies.jungle
-  const [greeting, setGreeting] = useState("Good Morning")
   const [question, setQuestion] = useState("")
 
   // Hydrate time-dependent values on client only to avoid SSR mismatch
   useEffect(() => {
-    setGreeting(getTimeGreeting().greeting)
     setQuestion(getTodayQuestion())
   }, [])
 
@@ -437,10 +464,16 @@ export default function HomePage() {
     }, 50)
   }
 
+  const RECORD_MIN = 30
+  const RECORD_MAX = 60
+  const recordingFinishedRef = useRef(false)
+
   function finishRecording() {
+    if (recordingFinishedRef.current) return
+    recordingFinishedRef.current = true
+    if (recordIntervalRef.current) { clearInterval(recordIntervalRef.current); recordIntervalRef.current = null }
     setIsRecording(false)
     setRecordSeconds(0)
-    if (recordIntervalRef.current) { clearInterval(recordIntervalRef.current); recordIntervalRef.current = null }
     setJournalUnlocked(true)
     addToMyDay("Voice journal completed")
     triggerReflection()
@@ -451,31 +484,29 @@ export default function HomePage() {
     }
   }
 
+  function startRecording() {
+    if (journalUnlocked || isRecording) return
+    recordingFinishedRef.current = false
+    setRecordSeconds(0)
+    setIsRecording(true)
+  }
+
   useEffect(() => {
-    if (isRecording) {
-      setRecordSeconds(0)
-      recordIntervalRef.current = setInterval(() => {
-        setRecordSeconds((s) => {
-          if (s >= 59) {
-            finishRecording()
-            return 0
-          }
-          return s + 1
-        })
-      }, 1000)
-      // Minimum 2s hold to unlock
-      recordTimerRef.current = setTimeout(() => {}, 2000)
-    } else {
+    if (!isRecording) {
       if (recordIntervalRef.current) { clearInterval(recordIntervalRef.current); recordIntervalRef.current = null }
-      if (recordTimerRef.current) clearTimeout(recordTimerRef.current)
-      // If held for at least 2s, finish
-      if (recordSeconds >= 2 && !journalUnlocked) {
-        finishRecording()
-      }
+      return
     }
+    const startTime = Date.now()
+    recordIntervalRef.current = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000)
+      if (elapsed >= RECORD_MAX) {
+        finishRecording()
+        return
+      }
+      setRecordSeconds(elapsed)
+    }, 250)
     return () => {
-      if (recordIntervalRef.current) clearInterval(recordIntervalRef.current)
-      if (recordTimerRef.current) clearTimeout(recordTimerRef.current)
+      if (recordIntervalRef.current) { clearInterval(recordIntervalRef.current); recordIntervalRef.current = null }
     }
   }, [isRecording])
 
@@ -592,63 +623,143 @@ export default function HomePage() {
           <>
             {/* -- Greeting -- */}
             <section className="text-center">
-              <h1 className="text-3xl font-extrabold tracking-tight text-white text-balance">{greeting}, Explorer</h1>
+              <h1 className="text-3xl font-extrabold tracking-tight text-white text-balance">Welcome to Adventure Quest</h1>
               <p className="mt-1 text-base text-[#8AA8C7]">
                 {journalUnlocked ? "Journal unlocked. Your quest awaits." : "Unlock your quest with your voice."}
               </p>
             </section>
 
-            {/* -- Voice Journal Card (60s max) -- */}
+            {/* -- Voice Journal Card (30s min / 60s max) -- */}
             <section className="rounded-3xl bg-[#13263A] p-6">
               <div className="mb-1 flex items-center justify-between">
                 <button
-                  onClick={() => !journalUnlocked && setShowJournalPicker(true)}
+                  onClick={() => !journalUnlocked && !isRecording && setShowJournalPicker(true)}
                   className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF] transition-colors hover:text-[#8AA8C7]"
                 >
-                  {"Today's Journal"} {!journalUnlocked && <ChevronDown className="ml-1 inline h-3 w-3" />}
+                  {"Today's Journal"} {!journalUnlocked && !isRecording && <ChevronDown className="ml-1 inline h-3 w-3" />}
                 </button>
                 {journalUnlocked ? (
                   <span className="rounded-full bg-[#2E8B57]/20 px-3 py-1 text-xs font-bold text-[#A8E6B0]">Unlocked</span>
+                ) : isRecording ? (
+                  <span className="flex items-center gap-1 rounded-full bg-[#FF6B6B]/15 px-3 py-1 text-xs font-bold text-[#FF6B6B]">
+                    <span className="relative mr-1 flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF6B6B] opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-[#FF6B6B]" />
+                    </span>
+                    REC
+                  </span>
                 ) : (
                   <span className="flex items-center gap-1 rounded-full bg-[#1A2D42] px-3 py-1 text-xs font-bold text-[#5A8AAF]">
-                    <Timer className="h-3 w-3" /> 60s max
+                    <Timer className="h-3 w-3" /> 30s min / 60s max
                   </span>
                 )}
               </div>
               <button
-                onClick={() => !journalUnlocked && setShowJournalPicker(true)}
+                onClick={() => !journalUnlocked && !isRecording && setShowJournalPicker(true)}
                 className="mb-5 w-full text-left text-lg font-bold leading-relaxed text-white transition-colors hover:text-[#A8E6B0]"
               >
                 {selectedPrompt || question || "Tap to choose a journal prompt"}
               </button>
-              <div className="flex flex-col items-center gap-3">
-                <div className="relative">
-                  <button
-                    onMouseDown={() => !journalUnlocked && setIsRecording(true)} onMouseUp={() => setIsRecording(false)} onMouseLeave={() => setIsRecording(false)}
-                    onTouchStart={() => !journalUnlocked && setIsRecording(true)} onTouchEnd={() => setIsRecording(false)}
-                    disabled={journalUnlocked}
-                    className={`flex h-20 w-20 items-center justify-center rounded-full transition-all ${journalUnlocked ? "bg-[#2E8B57]/30 opacity-60" : isRecording ? "scale-110 bg-[#FF6B6B]" : "bg-[#2E8B57] hover:bg-[#24734A]"}`}
-                    style={{ boxShadow: isRecording ? "0 0 0 8px rgba(255,107,107,0.25), 0 0 24px rgba(255,107,107,0.3)" : "0 4px 20px rgba(46,139,87,0.35)" }}
-                    aria-label="Hold to record your voice journal"
-                  >
-                    {isRecording ? <Pause className="h-8 w-8 text-white" /> : <Mic className="h-8 w-8 text-white" />}
-                  </button>
-                  {/* Circular timer ring */}
-                  {isRecording && (
-                    <svg className="absolute -inset-2 h-24 w-24" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="46" fill="none" stroke="#FF6B6B" strokeWidth="3" strokeOpacity="0.2" />
-                      <circle cx="50" cy="50" r="46" fill="none" stroke="#FF6B6B" strokeWidth="3"
-                        strokeDasharray={`${(recordSeconds / 60) * 289} 289`}
-                        strokeLinecap="round" transform="rotate(-90 50 50)"
-                        className="transition-all duration-1000"
-                      />
-                    </svg>
-                  )}
-                </div>
-                <span className="text-sm font-semibold text-[#5A8AAF]">
-                  {journalUnlocked ? "Journal recorded" : isRecording ? `Recording... ${recordSeconds}s / 60s` : "Hold to record"}
-                </span>
-              </div>
+              {(() => {
+                const pct = Math.min(recordSeconds / RECORD_MAX, 1)
+                const circumference = 2 * Math.PI * 48         // ~301.6
+                const reachedMin = recordSeconds >= RECORD_MIN
+                const ringColor = reachedMin ? "#2E8B57" : "#FF6B6B"
+                return (
+                  <div className="flex flex-col items-center gap-4">
+                    {/* Mic button with circular progress ring */}
+                    <div className="relative flex items-center justify-center" style={{ width: 108, height: 108 }}>
+                      {/* SVG ring -- always rendered so layout is stable */}
+                      <svg className="pointer-events-none absolute inset-0" width="108" height="108" viewBox="0 0 108 108">
+                        {/* track */}
+                        <circle cx="54" cy="54" r="48" fill="none" stroke={isRecording ? "#2A3E55" : "transparent"} strokeWidth="4" />
+                        {/* progress arc */}
+                        {isRecording && (
+                          <circle cx="54" cy="54" r="48" fill="none"
+                            stroke={ringColor}
+                            strokeWidth="4"
+                            strokeDasharray={`${pct * circumference} ${circumference}`}
+                            strokeLinecap="round"
+                            transform="rotate(-90 54 54)"
+                            style={{ transition: "stroke-dasharray 0.3s linear, stroke 0.3s ease" }}
+                          />
+                        )}
+                        {/* 30-s tick mark (halfway notch) */}
+                        {isRecording && (
+                          <line x1="54" y1="6" x2="54" y2="12"
+                            stroke="#5A8AAF" strokeWidth="2" strokeLinecap="round"
+                            transform="rotate(180 54 54)" opacity="0.5"
+                          />
+                        )}
+                      </svg>
+
+                      <button
+                        onClick={() => { if (!isRecording && !journalUnlocked) startRecording() }}
+                        disabled={journalUnlocked || isRecording}
+                        className={`relative z-10 flex h-20 w-20 items-center justify-center rounded-full transition-all ${journalUnlocked ? "bg-[#2E8B57]/30 opacity-60" : isRecording ? "scale-105 bg-[#FF6B6B]" : "bg-[#2E8B57] hover:bg-[#24734A] active:scale-95"}`}
+                        style={{
+                          boxShadow: isRecording
+                            ? `0 0 0 6px ${ringColor}40, 0 0 20px ${ringColor}30`
+                            : "0 4px 20px rgba(46,139,87,0.35)",
+                        }}
+                        aria-label={isRecording ? "Recording in progress" : "Tap to start recording your voice journal"}
+                      >
+                        {journalUnlocked
+                          ? <Check className="h-8 w-8 text-[#2E8B57]" />
+                          : <Mic className={`h-8 w-8 text-white ${isRecording ? "animate-pulse" : ""}`} />}
+                      </button>
+                    </div>
+
+                    {/* Timer readout + horizontal bar */}
+                    {isRecording ? (
+                      <div className="flex w-full flex-col items-center gap-2">
+                        {/* Large elapsed counter */}
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-3xl font-extrabold tabular-nums text-white">{recordSeconds}</span>
+                          <span className="text-base font-semibold text-[#5A8AAF]">/ {RECORD_MAX}s</span>
+                        </div>
+
+                        {/* Horizontal progress bar */}
+                        <div className="relative h-2.5 w-full max-w-[260px] overflow-hidden rounded-full bg-[#1A2D42]">
+                          {/* 30-s marker line */}
+                          <div className="absolute top-0 z-10 h-full w-0.5 rounded-full bg-white/30" style={{ left: `${(RECORD_MIN / RECORD_MAX) * 100}%` }} />
+                          {/* fill */}
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${pct * 100}%`,
+                              backgroundColor: ringColor,
+                              transition: "width 0.3s linear, background-color 0.3s ease",
+                            }}
+                          />
+                        </div>
+
+                        {/* Contextual label */}
+                        <span className="text-sm font-medium" style={{ color: reachedMin ? "#A8E6B0" : "#8AA8C7" }}>
+                          {reachedMin
+                            ? "Minimum reached -- press Done whenever you're ready"
+                            : `${RECORD_MIN - recordSeconds}s left until you can finish`}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-sm font-semibold text-[#5A8AAF]">
+                        {journalUnlocked ? "Journal recorded" : "Tap to record"}
+                      </span>
+                    )}
+
+                    {/* Done button -- appears only after RECORD_MIN */}
+                    {isRecording && reachedMin && (
+                      <button
+                        onClick={() => finishRecording()}
+                        className="flex items-center gap-2 rounded-2xl bg-[#2E8B57] px-10 py-3.5 text-base font-bold text-white transition-all hover:bg-[#24734A] active:scale-95"
+                        style={{ boxShadow: "0 4px 20px rgba(46,139,87,0.45)" }}
+                      >
+                        <Check className="h-5 w-5" /> Done
+                      </button>
+                    )}
+                  </div>
+                )
+              })()}
             </section>
 
             {/* -- My Day (expandable auto-log of ALL completed tasks) -- */}
@@ -690,6 +801,48 @@ export default function HomePage() {
                   ))}
                 </div>
               )}
+            </section>
+
+            {/* -- Worry Box -- */}
+            <section className="rounded-3xl bg-[#13263A] p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#D4872C]/15">
+                  <span className="text-2xl leading-none">{"\uD83D\uDCE6"}</span>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-base font-bold text-white">Worry Box</h2>
+                  <p className="text-sm text-[#8AA8C7]">Lock a worry away for your therapist</p>
+                </div>
+                <button
+                  onClick={() => setShowWorryBox(true)}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#2E8B57] transition-transform hover:scale-105 active:scale-95"
+                  style={{ boxShadow: "0 4px 16px rgba(46,139,87,0.35)" }}
+                  aria-label="Record a worry"
+                >
+                  <Mic className="h-5 w-5 text-white" />
+                </button>
+              </div>
+            </section>
+
+            {/* -- Solution Box -- */}
+            <section className="rounded-3xl bg-[#13263A] p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FFD700]/15">
+                  <span className="text-2xl leading-none">{"\uD83D\uDCA1"}</span>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-base font-bold text-white">Solution Box</h2>
+                  <p className="text-sm text-[#8AA8C7]">{"What's one small thing you can do about it?"}</p>
+                </div>
+                <button
+                  onClick={() => setShowSolutionBox(true)}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#4ECDC4] transition-transform hover:scale-105 active:scale-95"
+                  style={{ boxShadow: "0 4px 16px rgba(78,205,196,0.35)" }}
+                  aria-label="Record a solution"
+                >
+                  <Mic className="h-5 w-5 text-white" />
+                </button>
+              </div>
             </section>
 
             {/* -- Scavenger Hunt (Optional XP) -- */}
@@ -735,67 +888,26 @@ export default function HomePage() {
               </div>
             </section>
 
-            {/* -- Worry Box (moved above Extra XP) -- */}
+            {/* -- Schedule the Joy (with Calendar) -- */}
             <section className="rounded-3xl bg-[#13263A] p-5">
-              <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Worry Box</h2>
-                <Lock className="h-4 w-4 text-[#5A8AAF]" />
-              </div>
-              <p className="mb-3 text-sm text-[#8AA8C7]">Put your worries in the box. Open them only with your therapist.</p>
-              <Button onClick={() => setShowWorryBox(true)} variant="outline" className="w-full rounded-xl border-[#2E8B57]/40 bg-transparent text-[#A8E6B0] hover:bg-[#2E8B57]/10">
-                <Package className="mr-2 h-4 w-4" /> Add a Worry
-              </Button>
-            </section>
-
-            {/* -- Solution Box (AI Therapist Chat) -- */}
-            <section className="rounded-3xl bg-[#13263A] p-5">
-              <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Solution Box</h2>
-                <Bot className="h-4 w-4 text-[#4ECDC4]" />
-              </div>
-              <p className="mb-3 text-sm text-[#8AA8C7]">Chat with your AI guide. Your conversation is stored for your therapist to review.</p>
-              <Button onClick={() => setShowSolutionBox(true)} className="w-full rounded-xl bg-[#4ECDC4] text-white hover:bg-[#3DBDB5]">
-                <MessageCircle className="mr-2 h-4 w-4" /> Open Solution Box
-              </Button>
-              {solutionMessages.length > 1 && (
-                <p className="mt-2 text-center text-xs text-[#5A8AAF]">{solutionMessages.filter(m => m.role === "user").length} messages sent this session</p>
-              )}
-            </section>
-
-            {/* -- Extra XP -- */}
-            <section className="rounded-3xl bg-[#13263A] p-5">
-              <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Extra XP</h2>
-                <div className="flex items-center gap-1 rounded-full px-3 py-1" style={{ backgroundColor: `${currency.color}15` }}>
-                  <Zap className="h-3.5 w-3.5" style={{ color: currency.color }} />
-                  <span className="text-xs font-bold" style={{ color: currency.color }}>
-                    {completedXp.reduce((sum, id) => sum + (extraXpItems.find(x => x.id === id)?.xp ?? 0), 0)} {currency.name}
-                  </span>
-                </div>
-              </div>
-              <p className="mb-3 text-sm text-[#8AA8C7]">Earn bonus {currency.name} through extra activities beyond your daily quest.</p>
-              <div className="flex flex-col gap-2">
-                {extraXpItems.map((item) => {
-                  const done = completedXp.includes(item.id)
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => { if (!done) { setCompletedXp((prev) => [...prev, item.id]); addToMyDay(`Extra XP: ${item.label}`); triggerReflection() } }}
-                      className={`flex items-center gap-3 rounded-2xl p-4 text-left transition-all ${done ? "bg-[#2E8B57]/15 ring-1 ring-[#2E8B57]/30" : "bg-[#1A2D42] hover:scale-[1.01] active:scale-[0.99]"}`}
-                    >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: done ? "#2E8B5722" : `${item.color}22` }}>
-                        {done ? <Star className="h-5 w-5 text-[#2E8B57]" /> : <item.icon className="h-5 w-5" style={{ color: item.color }} />}
-                      </div>
-                      <div className="flex-1">
-                        <p className={`text-sm font-bold ${done ? "text-[#A8E6B0]" : "text-white"}`}>{item.label}</p>
-                        <p className="text-xs text-[#8AA8C7]">{item.desc}</p>
-                      </div>
-                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${done ? "bg-[#2E8B57]/20 text-[#A8E6B0]" : "bg-[#FFD700]/15 text-[#FFD700]"}`}>
-                        {done ? "Done" : `+${item.xp}`}
-                      </span>
-                    </button>
-                  )
-                })}
+              <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Schedule the Joy</h2>
+              <p className="mb-3 text-sm text-[#8AA8C7]">Choose one enjoyable activity and pick a date & time. Completion earns XP.</p>
+              <div className="grid grid-cols-2 gap-2">
+                {joyActivities.map((act) => (
+                  <button
+                    key={act.label}
+                    onClick={() => {
+                      setJoyActivity(act.label)
+                      setJoyDate("")
+                      setJoyTime("")
+                      setShowJoyCalendar(true)
+                    }}
+                    className="flex items-center gap-2 rounded-xl bg-[#1A2D42] px-3 py-3 text-sm font-bold text-white transition-transform hover:scale-105 active:scale-95"
+                  >
+                    <span className="text-lg leading-none">{act.emoji}</span>
+                    {act.label}
+                  </button>
+                ))}
               </div>
             </section>
 
@@ -831,57 +943,14 @@ export default function HomePage() {
               </div>
             </section>
 
-            {/* -- Schedule the Joy (belongs in Check-In per doc) -- */}
-            <section className="rounded-3xl bg-[#13263A] p-5">
-              <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Schedule the Joy</h2>
-              <p className="mb-3 text-sm text-[#8AA8C7]">Choose one enjoyable activity, choose a time, and get a reminder. Completion earns XP. Optional image proof.</p>
-              <div className="grid grid-cols-2 gap-2">
-                {["Go for a walk", "Cook something fun", "Call a friend", "Read a book"].map((act) => (
-                  <button
-                    key={act}
-                    onClick={() => {
-                      addToMyDay(`Scheduled joy: ${act}`)
-                      triggerReflection()
-                    }}
-                    className="rounded-xl bg-[#1A2D42] px-3 py-3 text-sm font-bold text-white transition-transform hover:scale-105 active:scale-95"
-                  >
-                    {act}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* -- Meditation (per doc, part of Check-In calm UI) -- */}
-            <section className="rounded-3xl bg-[#13263A] p-5">
-              <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Meditation Break</h2>
-              <p className="mb-3 text-sm text-[#8AA8C7]">Choose a character and take a guided breathing break.</p>
-              <Button onClick={() => setShowMeditation(true)} variant="outline" className="w-full rounded-xl border-[#DDA0DD]/40 bg-transparent text-[#DDA0DD] hover:bg-[#DDA0DD]/10">
-                <Sparkles className="mr-2 h-4 w-4" /> Meditate
-              </Button>
-            </section>
           </>
         ) : activeTab === "journey" ? (
-          /* -- Journey Tab (Adventures + Today's Quest + Fuel + Movement) -- */
+          /* -- Adventure Tab (formerly Journey) -- */
           <>
             <section className="text-center">
-              <h1 className="text-2xl font-extrabold tracking-tight text-white text-balance">Your Journey</h1>
-              <p className="mt-1 text-sm text-[#8AA8C7]">Choose a landscape and start your quest.</p>
+              <h1 className="text-2xl font-extrabold tracking-tight text-white text-balance">Your Adventure</h1>
+              <p className="mt-1 text-sm text-[#8AA8C7]">Fuel up, pick your landscape, and move.</p>
             </section>
-
-            {/* Today's Quest */}
-            {journalUnlocked && (
-              <section className="rounded-3xl bg-[#13263A] p-5">
-                <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">{"Today's Quest"}</h2>
-                <div className="mb-3 rounded-2xl bg-[#1A2D42] p-4">
-                  <p className="mb-1 text-sm font-bold text-[#FFD700]">Riddle of the Day</p>
-                  <p className="text-base leading-relaxed text-white">{"I have cities but no houses, forests but no trees, and water but no fish. What am I?"}</p>
-                  <p className="mt-2 text-xs text-[#5A8AAF]">Answer: A map! Now begin your quest.</p>
-                </div>
-                <Link href="/jungle" className="flex items-center justify-center gap-2 rounded-xl bg-[#2E8B57] px-4 py-3 font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]">
-                  <MapPin className="h-5 w-5" /> Go to My Map
-                </Link>
-              </section>
-            )}
 
             {/* Fuel Gauge + Character */}
             <section className="rounded-3xl bg-[#13263A] p-5">
@@ -1021,6 +1090,51 @@ export default function HomePage() {
               )}
             </section>
 
+            {/* Adventures - Compact Dropdown */}
+            <section className="rounded-3xl bg-[#13263A] p-5">
+              <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Adventures</h2>
+              <div className="relative">
+                <button
+                  onClick={() => setShowLandscapeDropdown(!showLandscapeDropdown)}
+                  className="flex w-full items-center gap-3 rounded-2xl bg-[#1A2D42] p-4 transition-all hover:bg-[#243B55]"
+                >
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${adventures.find(a => a.id === activeAdventure)?.iconBg ?? "bg-[#2E8B57]"}`}>
+                    <LandscapeIcon id={activeAdventure} />
+                  </div>
+                  <div className="flex flex-1 flex-col text-left">
+                    <span className="text-base font-bold text-white">{adventures.find(a => a.id === activeAdventure)?.name ?? "Jungle"}</span>
+                    <span className="text-xs text-[#8AA8C7]">{adventures.find(a => a.id === activeAdventure)?.tagline ?? ""}</span>
+                  </div>
+                  <ChevronDown className={`h-5 w-5 text-[#5A8AAF] transition-transform ${showLandscapeDropdown ? "rotate-180" : ""}`} />
+                </button>
+                {showLandscapeDropdown && (
+                  <div className="absolute inset-x-0 top-full z-20 mt-2 flex max-h-64 flex-col gap-1 overflow-y-auto rounded-2xl bg-[#1A2D42] p-2 shadow-xl ring-1 ring-[#2A3E55]">
+                    {adventures.map((adv) => {
+                      const advCurrency = xpCurrencies[adv.id]
+                      return (
+                        <Link
+                          key={adv.id}
+                          href={adv.href}
+                          onClick={() => setShowLandscapeDropdown(false)}
+                          className={`flex items-center gap-3 rounded-xl p-3 transition-all hover:bg-[#243B55] ${adv.id === activeAdventure ? "bg-[#2E8B57]/15 ring-1 ring-[#2E8B57]/30" : ""}`}
+                        >
+                          <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${adv.iconBg}`}>
+                            <LandscapeIcon id={adv.id} />
+                          </div>
+                          <span className="flex-1 text-sm font-bold text-white">{adv.name}</span>
+                          {advCurrency && (
+                            <div className="flex items-center gap-1">
+                              {advCurrency.icon}
+                            </div>
+                          )}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </section>
+
             {/* Movement */}
             <section className="rounded-3xl bg-[#13263A] p-5">
               <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Movement & Exercise</h2>
@@ -1030,58 +1144,22 @@ export default function HomePage() {
               </Button>
             </section>
 
-            {/* Roadblock Skills */}
+            {/* Roadblock Skills - 2x2 Grid */}
             <section className="rounded-3xl bg-[#13263A] p-5">
-              <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Roadblock Skills</h2>
-              <div className="flex flex-col gap-2">
-                {roadblocks.map((rb) => (
-                  <button key={rb.id} onClick={() => setShowRoadblock(rb)} className="flex items-center gap-3 rounded-2xl bg-[#1A2D42] p-4 text-left transition-transform hover:scale-[1.01] active:scale-[0.99]">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: `${rb.color}22` }}>
-                      <rb.icon className="h-5 w-5" style={{ color: rb.color }} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-white">{rb.label}</p>
-                      <p className="text-xs text-[#8AA8C7]">{rb.desc}</p>
-                    </div>
+              <h2 className="mb-1 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Roadblock Skills</h2>
+              <p className="mb-3 text-sm text-[#8AA8C7]">Practice your coping skills.</p>
+              <div className="grid grid-cols-2 gap-3">
+                {roadblockSkills.map((skill) => (
+                  <button
+                    key={skill.id}
+                    onClick={() => setShowRoadblockSkill(skill)}
+                    className="flex flex-col items-center gap-2 rounded-2xl bg-[#1A2D42] p-4 text-center transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <span className="text-3xl leading-none">{skill.emoji}</span>
+                    <p className="text-sm font-bold text-white">{skill.label}</p>
+                    <p className="text-xs text-[#8AA8C7]">{skill.desc}</p>
                   </button>
                 ))}
-                <button onClick={() => setShowThoughtSorter(true)} className="flex items-center gap-3 rounded-2xl bg-[#1A2D42] p-4 text-left transition-transform hover:scale-[1.01] active:scale-[0.99]">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#9B59B6]/20">
-                    <Brain className="h-5 w-5 text-[#9B59B6]" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">Thought Sorter</p>
-                    <p className="text-xs text-[#8AA8C7]">Identify negative thoughts: trash or treasure?</p>
-                  </div>
-                </button>
-              </div>
-            </section>
-
-            {/* Choose Adventure */}
-            <section>
-              <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Choose Your Adventure</h2>
-              <div className="flex flex-col gap-3">
-                {adventures.map((adv) => {
-                  const advCurrency = xpCurrencies[adv.id]
-                  return (
-                    <Link key={adv.id} href={adv.href} className={`group flex items-center gap-4 rounded-2xl bg-gradient-to-r ${adv.gradient} border ${adv.border} p-4 transition-transform hover:scale-[1.02] active:scale-[0.98]`}>
-                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${adv.iconBg}`}>
-                        <LandscapeIcon id={adv.id} />
-                      </div>
-                      <div className="flex flex-1 flex-col">
-                        <span className="text-base font-bold text-white">{adv.name}</span>
-                        <span className={`text-sm ${adv.textColor}`}>{adv.tagline}</span>
-                      </div>
-                      {advCurrency && (
-                        <div className="flex items-center gap-1">
-                          {advCurrency.icon}
-                          <span className="text-xs font-bold" style={{ color: advCurrency.color }}>{advCurrency.name}</span>
-                        </div>
-                      )}
-                      <ChevronRight className="h-5 w-5 text-white/50 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  )
-                })}
               </div>
             </section>
           </>
@@ -1092,6 +1170,25 @@ export default function HomePage() {
               <h1 className="text-2xl font-extrabold tracking-tight text-white text-balance">Your Profile</h1>
               <p className="mt-1 text-sm text-[#8AA8C7]">Personalize your experience.</p>
             </section>
+
+            {/* Upcoming Joy */}
+            {scheduledJoys.length > 0 && (
+              <section className="rounded-3xl bg-[#13263A] p-5">
+                <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Upcoming Joy</h2>
+                <div className="flex flex-col gap-2">
+                  {scheduledJoys.map((joy, i) => (
+                    <div key={i} className="flex items-center gap-3 rounded-2xl bg-[#1A2D42] p-4">
+                      <span className="text-2xl leading-none">{joy.emoji}</span>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-white">{joy.activity}</p>
+                        <p className="text-xs text-[#8AA8C7]">{joy.date} at {joy.time}</p>
+                      </div>
+                      <CalendarCheck className="h-4 w-4 text-[#2E8B57]" />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Health Preferences */}
             <section className="rounded-3xl bg-[#13263A] p-5">
@@ -1252,8 +1349,8 @@ export default function HomePage() {
           style={{ color: activeTab === "journey" ? "#FFD700" : "#5A8AAF" }}
           aria-current={activeTab === "journey" ? "page" : undefined}
         >
-          <MapPin className="h-5 w-5" />
-          <span className="text-[10px] font-bold">Journey</span>
+          <Compass className="h-5 w-5" />
+          <span className="text-[10px] font-bold">Adventure</span>
         </button>
         <button
           onClick={() => setActiveTab("profile")}
@@ -1495,22 +1592,80 @@ export default function HomePage() {
         </DialogContent>
       </Dialog>
 
-      {/* Meditation Modal */}
-      <Dialog open={showMeditation} onOpenChange={setShowMeditation}>
+      {/* Schedule the Joy - Calendar Modal */}
+      <Dialog open={showJoyCalendar} onOpenChange={setShowJoyCalendar}>
         <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#2A3E55] bg-[#13263A] p-6">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-white">Meditation Break</DialogTitle>
-            <DialogDescription className="text-sm text-[#8AA8C7]">Who do you want to meditate with?</DialogDescription>
+            <DialogTitle className="text-xl font-bold text-white">Schedule: {joyActivity}</DialogTitle>
+            <DialogDescription className="text-sm text-[#8AA8C7]">Pick a date and time for your joyful activity.</DialogDescription>
           </DialogHeader>
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            {meditationCharacters.map((c) => (
-              <button key={c.id} onClick={() => setSelectedMedChar(c.id)} className={`flex flex-col items-center gap-2 rounded-2xl p-3 transition-all ${selectedMedChar === c.id ? "scale-105 ring-2" : "hover:scale-105"}`} style={{ backgroundColor: selectedMedChar === c.id ? `${c.color}22` : "#1A2D42", borderColor: selectedMedChar === c.id ? c.color : "transparent" }}>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ backgroundColor: `${c.color}33` }}><Sparkles className="h-5 w-5" style={{ color: c.color }} /></div>
-                <span className="text-[10px] font-bold text-white">{c.label}</span>
-              </button>
-            ))}
+          <div className="mt-4 flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Date</label>
+              <input
+                type="date"
+                value={joyDate}
+                onChange={(e) => setJoyDate(e.target.value)}
+                className="w-full rounded-xl border-0 bg-[#1A2D42] px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#2E8B57] [color-scheme:dark]"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Time</label>
+              <input
+                type="time"
+                value={joyTime}
+                onChange={(e) => setJoyTime(e.target.value)}
+                className="w-full rounded-xl border-0 bg-[#1A2D42] px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#2E8B57] [color-scheme:dark]"
+              />
+            </div>
+            <Button
+              disabled={!joyDate || !joyTime}
+              onClick={() => {
+                const matchedActivity = joyActivities.find(a => a.label === joyActivity)
+                const formatted = new Date(joyDate + "T" + joyTime).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+                setScheduledJoys((prev) => [...prev, {
+                  activity: joyActivity,
+                  emoji: matchedActivity?.emoji ?? "",
+                  date: formatted,
+                  time: joyTime,
+                }])
+                addToMyDay(`Scheduled joy: ${joyActivity} on ${formatted} at ${joyTime}`)
+                triggerReflection()
+                setShowJoyCalendar(false)
+              }}
+              className="w-full rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A] disabled:opacity-40"
+            >
+              <CalendarCheck className="mr-2 h-4 w-4" /> Schedule Activity
+            </Button>
           </div>
-          <Button onClick={() => { setShowMeditation(false); addToMyDay("Meditation: breathing session"); triggerReflection() }} className="mt-4 w-full rounded-xl bg-[#DDA0DD] text-[#1A1014] hover:bg-[#CC8FCC]"><Wind className="mr-2 h-4 w-4" /> Begin Breathing</Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Roadblock Skill Modal */}
+      <Dialog open={!!showRoadblockSkill} onOpenChange={() => setShowRoadblockSkill(null)}>
+        <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#2A3E55] bg-[#13263A] p-6 text-center">
+          {showRoadblockSkill && (
+            <>
+              <DialogHeader className="flex flex-col items-center gap-3">
+                <span className="text-5xl leading-none">{showRoadblockSkill.emoji}</span>
+                <DialogTitle className="text-xl font-bold text-white">{showRoadblockSkill.label}</DialogTitle>
+                <DialogDescription className="text-sm text-[#8AA8C7]">{showRoadblockSkill.desc}</DialogDescription>
+              </DialogHeader>
+              <div className="mt-4 rounded-2xl bg-[#1A2D42] p-5 text-left">
+                <p className="text-sm leading-relaxed text-white">{showRoadblockSkill.instructions}</p>
+              </div>
+              <Button
+                onClick={() => {
+                  addToMyDay(`Roadblock skill: ${showRoadblockSkill.label}`)
+                  triggerReflection()
+                  setShowRoadblockSkill(null)
+                }}
+                className="mt-4 w-full rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]"
+              >
+                <Check className="mr-2 h-4 w-4" /> Done
+              </Button>
+            </>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -1535,7 +1690,7 @@ export default function HomePage() {
         </DialogContent>
       </Dialog>
 
-      {/* Leaderboard + Friend Connection Modal */}
+      {/* Leaderboard Modal */}
       <Dialog open={showLeaderboard} onOpenChange={setShowLeaderboard}>
         <DialogContent className="mx-auto max-w-sm rounded-3xl border-[#2A3E55] bg-[#13263A] p-6">
           <DialogHeader>
@@ -1558,32 +1713,65 @@ export default function HomePage() {
                     {pCurrency?.icon}
                     <span className="text-sm font-bold" style={{ color: pCurrency?.color }}>{p.xp}</span>
                   </div>
-                  {p.name !== "You" && (
-                    <button className="rounded-full bg-[#2E8B57]/20 p-1.5 transition-colors hover:bg-[#2E8B57]/30" aria-label={`Send message to ${p.name}`}>
-                      <MessageCircle className="h-3.5 w-3.5 text-[#A8E6B0]" />
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setShowEncouragement(showEncouragement === p.name ? null : p.name)}
+                    className="rounded-full bg-[#2E8B57]/20 p-1.5 transition-colors hover:bg-[#2E8B57]/30"
+                    aria-label={`Send message to ${p.name}`}
+                  >
+                    <MessageCircle className="h-3.5 w-3.5 text-[#A8E6B0]" />
+                  </button>
                 </div>
               )
             })}
           </div>
-          {/* Friend Connection integrated here */}
-          <div className="mt-4 rounded-2xl bg-[#1A2D42] p-4">
-            <div className="mb-2 flex items-center gap-2">
-              <Users className="h-4 w-4 text-[#2E8B57]" />
-              <span className="text-xs font-bold uppercase tracking-widest text-[#5A8AAF]">Friend Connection</span>
+
+          {/* Encouragement Popover */}
+          {showEncouragement && (
+            <div className="mt-3 rounded-2xl bg-[#1A2D42] p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs font-bold text-[#5A8AAF]">Send to {showEncouragement}</span>
+                <button onClick={() => setShowEncouragement(null)} className="text-[#5A8AAF] hover:text-white">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <div className="mb-3 flex flex-wrap gap-1.5">
+                {quickMessages.map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => {
+                      addToMyDay(`Sent "${m}" to ${showEncouragement}`)
+                      triggerReflection()
+                      setShowEncouragement(null)
+                    }}
+                    className="rounded-full bg-[#0C1B2A] px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#2E8B57]/20"
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  value={encourageMsg}
+                  onChange={(e) => setEncourageMsg(e.target.value)}
+                  placeholder="Write a message..."
+                  className="flex-1 rounded-xl border-0 bg-[#0C1B2A] px-4 py-2.5 text-sm text-white placeholder:text-[#5A8AAF] focus:outline-none focus:ring-2 focus:ring-[#2E8B57]"
+                />
+                <Button
+                  onClick={() => {
+                    if (encourageMsg.trim()) {
+                      addToMyDay(`Sent message to ${showEncouragement}`)
+                      triggerReflection()
+                    }
+                    setEncourageMsg("")
+                    setShowEncouragement(null)
+                  }}
+                  className="rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            <p className="mb-3 text-xs text-[#8AA8C7]">Send encouragement to fellow adventurers.</p>
-            <div className="mb-3 flex flex-wrap gap-1.5">
-              {quickMessages.map((m) => (
-                <button key={m} className="rounded-full bg-[#0C1B2A] px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#2E8B57]/20">{m}</button>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <input value={friendMsg} onChange={(e) => setFriendMsg(e.target.value)} placeholder="Write a message..." className="flex-1 rounded-xl border-0 bg-[#0C1B2A] px-4 py-2.5 text-sm text-white placeholder:text-[#5A8AAF] focus:outline-none focus:ring-2 focus:ring-[#2E8B57]" />
-              <Button onClick={() => setFriendMsg("")} className="rounded-xl bg-[#2E8B57] text-white hover:bg-[#24734A]"><Send className="h-4 w-4" /></Button>
-            </div>
-          </div>
+          )}
         </DialogContent>
       </Dialog>
 

@@ -18,11 +18,11 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const patients = [
-  { id: 1, name: "Alex Rivera", landscape: "Jungle", fuel: 75, streak: 12, lastActive: "Today", quest: "Quest #3", repetition: 2, freezesUsed: 0, freezesTotal: 1, worries: ["Worried about job interview", "Family stress"], journalEntries: 24, thoughtSorts: 8, monstersDefeated: 3, recipesCooked: 6, coins: 410, leaderboardRank: 1, workouts: 15, modulesCompleted: ["Deep Breathing", "Grounding (5-4-3-2-1)", "Positive Self-Talk"], triggerEvents: 1, imageProofs: 8, completionRate: 87, solutionBoxMsgs: 12 },
-  { id: 2, name: "Jordan Lee", landscape: "Ocean", fuel: 45, streak: 5, lastActive: "Yesterday", quest: "Quest #2", repetition: 1, freezesUsed: 1, freezesTotal: 1, worries: ["Feeling overwhelmed at school"], journalEntries: 10, thoughtSorts: 3, monstersDefeated: 1, recipesCooked: 2, coins: 310, leaderboardRank: 2, workouts: 6, modulesCompleted: ["Deep Breathing"], triggerEvents: 3, imageProofs: 4, completionRate: 62, solutionBoxMsgs: 5 },
-  { id: 3, name: "Sam Nguyen", landscape: "Savannah", fuel: 90, streak: 21, lastActive: "Today", quest: "Quest #5", repetition: 3, freezesUsed: 0, freezesTotal: 1, worries: [], journalEntries: 42, thoughtSorts: 15, monstersDefeated: 5, recipesCooked: 14, coins: 240, leaderboardRank: 3, workouts: 28, modulesCompleted: ["Deep Breathing", "Self-Advocacy", "Positive Self-Talk", "Thought Sorting", "Grounding (5-4-3-2-1)", "Schedule the Joy"], triggerEvents: 0, imageProofs: 22, completionRate: 95, solutionBoxMsgs: 28 },
-  { id: 4, name: "Taylor Brooks", landscape: "Desert", fuel: 30, streak: 2, lastActive: "3 days ago", quest: "Quest #1", repetition: 1, freezesUsed: 1, freezesTotal: 1, worries: ["Rent is due", "Can not sleep"], journalEntries: 4, thoughtSorts: 1, monstersDefeated: 0, recipesCooked: 1, coins: 120, leaderboardRank: 5, workouts: 2, modulesCompleted: [], triggerEvents: 5, imageProofs: 1, completionRate: 28, solutionBoxMsgs: 2 },
-  { id: 5, name: "Morgan Chen", landscape: "Mountains", fuel: 60, streak: 8, lastActive: "Today", quest: "Quest #4", repetition: 2, freezesUsed: 0, freezesTotal: 1, worries: ["Health anxiety"], journalEntries: 18, thoughtSorts: 6, monstersDefeated: 2, recipesCooked: 5, coins: 195, leaderboardRank: 4, workouts: 12, modulesCompleted: ["Deep Breathing", "Meditation Break", "Stretch & Move"], triggerEvents: 2, imageProofs: 10, completionRate: 74, solutionBoxMsgs: 9 },
+  { id: 1, name: "Alex Rivera", landscape: "Jungle", fuel: 75, fuelUploads: 12, realLifeTasks: 8, streak: 12, lastActive: "Today", quest: "Quest #3", repetition: 2, freezesUsed: 0, freezesTotal: 1, worries: ["Worried about job interview", "Family stress"], journalEntries: 24, thoughtSorts: 8, monstersDefeated: 3, recipesCooked: 6, coins: 410, leaderboardRank: 1, workouts: 15, modulesCompleted: ["Deep Breathing", "Grounding (5-4-3-2-1)", "Positive Self-Talk"], triggerEvents: 1, imageProofs: 8, completionRate: 87, solutionBoxMsgs: 12 },
+  { id: 2, name: "Jordan Lee", landscape: "Ocean", fuel: 45, fuelUploads: 5, realLifeTasks: 3, streak: 5, lastActive: "Yesterday", quest: "Quest #2", repetition: 1, freezesUsed: 1, freezesTotal: 1, worries: ["Feeling overwhelmed at school"], journalEntries: 10, thoughtSorts: 3, monstersDefeated: 1, recipesCooked: 2, coins: 310, leaderboardRank: 2, workouts: 6, modulesCompleted: ["Deep Breathing"], triggerEvents: 3, imageProofs: 4, completionRate: 62, solutionBoxMsgs: 5 },
+  { id: 3, name: "Sam Nguyen", landscape: "Savannah", fuel: 90, fuelUploads: 22, realLifeTasks: 15, streak: 21, lastActive: "Today", quest: "Quest #5", repetition: 3, freezesUsed: 0, freezesTotal: 1, worries: [], journalEntries: 42, thoughtSorts: 15, monstersDefeated: 5, recipesCooked: 14, coins: 240, leaderboardRank: 3, workouts: 28, modulesCompleted: ["Deep Breathing", "Self-Advocacy", "Positive Self-Talk", "Thought Sorting", "Grounding (5-4-3-2-1)", "Schedule the Joy"], triggerEvents: 0, imageProofs: 22, completionRate: 95, solutionBoxMsgs: 28 },
+  { id: 4, name: "Taylor Brooks", landscape: "Desert", fuel: 30, fuelUploads: 2, realLifeTasks: 1, streak: 2, lastActive: "3 days ago", quest: "Quest #1", repetition: 1, freezesUsed: 1, freezesTotal: 1, worries: ["Rent is due", "Can not sleep"], journalEntries: 4, thoughtSorts: 1, monstersDefeated: 0, recipesCooked: 1, coins: 120, leaderboardRank: 5, workouts: 2, modulesCompleted: [], triggerEvents: 5, imageProofs: 1, completionRate: 28, solutionBoxMsgs: 2 },
+  { id: 5, name: "Morgan Chen", landscape: "Mountains", fuel: 60, fuelUploads: 10, realLifeTasks: 7, streak: 8, lastActive: "Today", quest: "Quest #4", repetition: 2, freezesUsed: 0, freezesTotal: 1, worries: ["Health anxiety"], journalEntries: 18, thoughtSorts: 6, monstersDefeated: 2, recipesCooked: 5, coins: 195, leaderboardRank: 4, workouts: 12, modulesCompleted: ["Deep Breathing", "Meditation Break", "Stretch & Move"], triggerEvents: 2, imageProofs: 10, completionRate: 74, solutionBoxMsgs: 9 },
 ]
 
 const modules = [
@@ -75,7 +75,8 @@ export function PatientTable() {
               <TableHead className="text-xs font-semibold uppercase tracking-wider text-[#8a96aa]">Patient</TableHead>
               <TableHead className="text-xs font-semibold uppercase tracking-wider text-[#8a96aa]">Landscape</TableHead>
               <TableHead className="text-xs font-semibold uppercase tracking-wider text-[#8a96aa]">Quest / Rep</TableHead>
-              <TableHead className="text-xs font-semibold uppercase tracking-wider text-[#8a96aa]">Fuel</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider text-[#8a96aa]">Fuel Uploads</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider text-[#8a96aa]">Real Life Tasks</TableHead>
               <TableHead className="text-xs font-semibold uppercase tracking-wider text-[#8a96aa]">Streak</TableHead>
               <TableHead className="text-xs font-semibold uppercase tracking-wider text-[#8a96aa]">Rank</TableHead>
               <TableHead className="text-xs font-semibold uppercase tracking-wider text-[#8a96aa]">Worries</TableHead>
@@ -97,9 +98,15 @@ export function PatientTable() {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Progress value={p.fuel} className="h-2 w-16 bg-[#e2e8f0]" />
-                    <span className="text-xs text-[#6b7b94]">{p.fuel}%</span>
+                  <div className="flex items-center gap-1.5">
+                    <Camera className="h-3.5 w-3.5 text-[#D4872C]" />
+                    <span className="text-sm text-[#1a2b4a]">{p.fuelUploads} uploads</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1.5">
+                    <Zap className="h-3.5 w-3.5 text-[#2E8B57]" />
+                    <span className="text-sm text-[#1a2b4a]">{p.realLifeTasks} tasks</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-[#1a2b4a]">{p.streak}d</TableCell>
